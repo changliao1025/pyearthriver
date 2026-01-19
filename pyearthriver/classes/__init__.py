@@ -10,7 +10,7 @@ from .flowline import pyflowline
 from .edge import pyedge
 from .confluence import pyconfluence
 # Import from new modular location for backward compatibility
-from ..core.rivergraph import pyrivergraph
+
 
 __all__ = [
     'pyvertex',

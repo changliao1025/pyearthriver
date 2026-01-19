@@ -6,7 +6,7 @@ iFlag_cython = importlib.util.find_spec("cython")
 if iFlag_cython is not None:
     from pyearth.gis.geometry.kernel import calculate_angle_between_point
 else:
-    from pyearth.gis.geometry.calculate_angle_between_point import  calculate_angle_between_point
+    from pyearth.gis.geometry.calculate_angle_between_point import calculate_angle_between_point
 
 from .vertex import pyvertex
 from .flowline import pyflowline
