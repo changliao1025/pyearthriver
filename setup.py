@@ -42,6 +42,7 @@ def get_extensions():
             include_dirs=[numpy.get_include()],
             libraries=[],
             library_dirs=[],
+            language="c++",  # Specify C++ language for libcpp support
         )
         for name, sources in ext_sources.items()
     ]
