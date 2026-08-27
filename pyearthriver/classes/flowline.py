@@ -496,6 +496,23 @@ class pyflowline(pypolyline):
         self.dSinuosity = self.dLength / dDistance
         return self.dSinuosity
 
+    def calculate_distance_to_vertex(self, pVertex: pyvertex) -> float:
+        """
+        Calculate the distance from the flowline to a given vertex.
+
+        Converts the vertex to a point and delegates to the parent class
+        distance calculation.
+
+        Args:
+            pVertex (pyvertex): The target vertex
+
+        Returns:
+            float: Distance from the flowline to the vertex in meters
+        """
+        # convert the vertex to point first
+        pPoint = pypoint(pVertex.__dict__)
+        return super().calculate_distance_to_point(pPoint)
+
     def get_sinuosity(self) -> float:
         """
         Get the sinuosity value, calculating it if not already computed.
