@@ -76,7 +76,7 @@ cpdef find_vertex_on_edge(list aVertex_in, pEdge_in):
     nVertex= len(aVertex_in)
     npoint = 0
     if nVertex > 0 :
-        index_vertex = RTreeindex
+        index_vertex = RTreeindex()
         for i in range(nVertex):
             lID = i
             x = aVertex_in[i].dLongitude_degree
@@ -100,7 +100,7 @@ cpdef find_vertex_on_edge(list aVertex_in, pEdge_in):
         bottom = min(y1, y2)
         top = max(y1, y2)
         pBound= (left, bottom, right, top)
-        aIntersect = list(index_vertex.search(pBound))
+        aIntersect = list(index_vertex.intersection(pBound))
         for k in aIntersect:
             pVertex = aVertex_in[k]
             iFlag_overlap, dDistance, diff = pEdge_in.check_vertex_on_edge(pVertex)

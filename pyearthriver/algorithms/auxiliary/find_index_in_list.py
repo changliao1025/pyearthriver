@@ -1,12 +1,10 @@
 import copy
 import numpy as np
-import importlib.util
 from rtree.index import Index as RTreeindex
 
-iFlag_cython = importlib.util.find_spec("cython")
-if iFlag_cython is not None:
+try:
     from pyearthriver.algorithms.cython.kernel import find_vertex_in_list
-else:
+except (ImportError, ModuleNotFoundError):
     from pyearthriver.algorithms.auxiliary.find_vertex_in_list import find_vertex_in_list
 
 

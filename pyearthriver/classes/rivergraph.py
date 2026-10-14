@@ -23,12 +23,9 @@ except ImportError:
     HAS_RTREE = False
     logger.warning("R-tree not available - using fallback spatial indexing")
 
-import importlib.util
-
-iFlag_cython = importlib.util.find_spec("cython")
-if iFlag_cython is not None:
+try:
     from pyearthriver.algorithms.cython.kernel import find_vertex_on_edge
-else:
+except (ImportError, ModuleNotFoundError):
     from pyearthriver.algorithms.auxiliary.find_index_in_list import find_vertex_on_edge
 
 
@@ -36,8 +33,8 @@ from pyearthriver.classes.flowline import pyflowline
 from pyearthriver.classes.vertex import pyvertex
 from pyearthriver.classes.edge import pyedge
 from pyearthriver.classes.confluence import pyconfluence
-from pyearthriver.formats.export_flowline import export_flowline_to_geojson
-from pyearthriver.formats.export_vertex import export_vertex_to_geojson
+from pyearthriver.formats.export_flowline import export_flowline_to_vector
+from pyearthriver.formats.export_vertex import export_vertex_to_vector
 
 
 class pyrivergraph:
@@ -277,7 +274,7 @@ class pyrivergraph:
                 sFolder_output = os.path.dirname(sFilename_flowline_in)
                 if sFolder_output and not os.path.exists(sFolder_output):
                     os.makedirs(sFolder_output)
-                export_flowline_to_geojson(self.aFlowline, sFilename_flowline_in)
+                export_flowline_to_vector(self.aFlowline, sFilename_flowline_in)
                 aFilename_out.append(sFilename_flowline_in)
                 logger.info(
                     f"Exported {len(self.aFlowline)} flowlines to {sFilename_flowline_in}"
@@ -290,7 +287,7 @@ class pyrivergraph:
                 sFolder_output = os.path.dirname(sFilename_vertex_in)
                 if sFolder_output and not os.path.exists(sFolder_output):
                     os.makedirs(sFolder_output)
-                export_vertex_to_geojson(self.aVertex, sFilename_vertex_in)
+                export_vertex_to_vector(self.aVertex, sFilename_vertex_in)
                 aFilename_out.append(sFilename_vertex_in)
                 logger.info(
                     f"Exported {len(self.aVertex)} vertices to {sFilename_vertex_in}"
@@ -787,7 +784,7 @@ class pyrivergraph:
             if iFlag_debug == 1 and sWorkspace_output_basin is not None:
                 sFilename_out = f"flowline_large_{sStep}_before_intersect.geojson"
                 sFilename_out = os.path.join(sWorkspace_output_basin, sFilename_out)
-                export_flowline_to_geojson(aFlowline_filtered, sFilename_out)
+                export_flowline_to_vector(aFlowline_filtered, sFilename_out)
 
             # check if whether any flowlinw is actually removed
             if len(aFlowline_filtered) == len(aFlowline_current):
@@ -807,7 +804,7 @@ class pyrivergraph:
                 if iFlag_debug == 1 and sWorkspace_output_basin is not None:
                     sFilename_out = f"flowline_merge_{sStep}_before_intersect.geojson"
                     sFilename_out = os.path.join(sWorkspace_output_basin, sFilename_out)
-                    export_flowline_to_geojson(aFlowline_merged, sFilename_out)
+                    export_flowline_to_vector(aFlowline_merged, sFilename_out)
 
                 # Step 6: Final stream order update for this iteration
                 aFlowline_current = self.update_headwater_stream_order()
