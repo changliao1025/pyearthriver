@@ -30,18 +30,20 @@ def find_vertex_in_list(aVertex_in, pVertex_in, dThreshold_in=1.0e-6):
     # now the new vertex
     x = pVertex_in.dLongitude_degree
     y = pVertex_in.dLatitude_degree
-    delta = 1e-5  # or your desired search tolerance
+    delta = max(1e-5, dThreshold_in)
     bbox = (x - delta, y - delta, x + delta, y + delta)
     aIntersect = list(index_vertex.intersection(bbox))
-    # aIntersect = list(index_vertex.search_surrounding([pVertex_in.dLongitude_degree, pVertex_in.dLatitude_degree]))
     for k in aIntersect:
         pVertex = aVertex_in[k]
-        # dDistance = pVertex.calculate_distance(pVertex_in)
-        if pVertex == pVertex_in:  # if dDistance < dThreshold_in:
+        if pVertex == pVertex_in:
             iFlag_exist = 1
             lIndex = k
             break
-        else:
-            pass
+        elif (abs(pVertex.dLongitude_degree - x) <= dThreshold_in and
+              abs(pVertex.dLatitude_degree - y) <= dThreshold_in):
+            iFlag_exist = 1
+            lIndex = k
+            break
 
     return iFlag_exist, lIndex
+

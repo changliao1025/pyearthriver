@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyearthriver"
-version = "0.1.1"
+version = "0.2.0"
 description = "A Python library for analyzing and processing river network flowlines using graph-based algorithms"
 readme = "README.md"
 authors = [
@@ -49,7 +49,20 @@ Repository = "https://github.com/changliao1025/pyearthriver"
 "Bug Tracker" = "https://github.com/changliao1025/pyearthriver/issues"
 
 [tool.setuptools]
-packages = ["pyearthriver", "pyearthriver.classes", "pyearthriver.algorithms", "pyearthriver.algorithms.auxiliary", "pyearthriver.algorithms.cython", "pyearthriver.formats"]
+packages = [
+    "pyearthriver",
+    "pyearthriver.classes",
+    "pyearthriver.algorithms",
+    "pyearthriver.algorithms.auxiliary",
+    "pyearthriver.algorithms.cython",
+    "pyearthriver.algorithms.spatial",
+    "pyearthriver.algorithms.cycles",
+    "pyearthriver.algorithms.braided",
+    "pyearthriver.algorithms.confluence",
+    "pyearthriver.algorithms.stream_order",
+    "pyearthriver.algorithms.topology",
+    "pyearthriver.formats",
+]
 
 [tool.setuptools.package-data]
 pyearthriver = ["*.pyx"]

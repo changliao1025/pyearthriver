@@ -1,0 +1,39 @@
+{
+  "type": "FeatureCollection",
+  "name": "linear_network",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"lineid": 1, "reach_name": "headwater"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-77.0, 41.5, 500.0],
+          [-77.0, 41.3, 400.0]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"lineid": 2, "reach_name": "middle_reach"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-77.0, 41.3, 400.0],
+          [-77.0, 41.1, 300.0]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"lineid": 3, "reach_name": "outlet_reach"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-77.0, 41.1, 300.0],
+          [-77.0, 41.0, 200.0]
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "name": "dendritic_network",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"lineid": 1, "name": "tributary_northwest"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-77.30, 41.60],
+          [-77.20, 41.45]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"lineid": 2, "name": "tributary_northeast"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-77.10, 41.60],
+          [-77.20, 41.45]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"lineid": 3, "name": "middle_stem"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-77.20, 41.45],
+          [-77.20, 41.25]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"lineid": 4, "name": "tributary_east"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-77.05, 41.35],
+          [-77.20, 41.25]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"lineid": 5, "name": "lower_mainstem"},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-77.20, 41.25],
+          [-77.20, 41.00]
+        ]
+      }
+    }
+  ]
+}

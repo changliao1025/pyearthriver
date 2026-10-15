@@ -8,7 +8,7 @@ between two vertices in the flowline network.
 
 import json
 from json import JSONEncoder
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
 import numpy as np
 from pyearth.toolbox.mesh.point import pypoint
 from pyearth.toolbox.mesh.line import pyline
@@ -375,3 +375,28 @@ class pyedge(pyline):
         if not isinstance(other, pyedge):
             return False
         return self.pVertex_start == other.pVertex_end
+
+    def check_vertex_on_edge(self, pVertex_in: 'pyvertex') -> Tuple[int, float, float]:
+        """
+        Check if a vertex lies on this edge.
+
+        Calculates whether the sum of distances from the vertex to both endpoints
+        equals the edge length within a tolerance.
+
+        Args:
+            pVertex_in (pyvertex): The vertex to check.
+
+        Returns:
+            Tuple[int, float, float]:
+                - int: 1 if vertex is on edge, 0 otherwise
+                - float: Distance from start vertex to the test vertex (meters)
+                - float: Difference between (d_start + d_end) and edge length (meters)
+        """
+        d_start = self.pVertex_start.calculate_distance(pVertex_in)
+        d_end = pVertex_in.calculate_distance(self.pVertex_end)
+        diff = abs((d_start + d_end) - self.dLength)
+
+        # Tolerant threshold: within 1 meter or 0.01% of edge length
+        if diff < 1.0 or (self.dLength > 0 and diff / self.dLength < 1e-4):
+            return 1, d_start, diff
+        return 0, d_start, diff

@@ -43,8 +43,14 @@ cpdef find_vertex_in_list(list aVertex_in, pVertex_in, double dThreshold_in = 1.
             top =    y + 1E-5
             pBound= (left, bottom, right, top)
             index_vertex.insert(i, pBound)
-
-        aIntersect = list(index_vertex.search_surrounding([pVertex_in.dLongitude_degree, pVertex_in.dLatitude_degree]))
+        x = pVertex_in.dLongitude_degree
+        y = pVertex_in.dLatitude_degree
+        left = x - max(1E-5, dThreshold_in)
+        right = x + max(1E-5, dThreshold_in)
+        bottom = y - max(1E-5, dThreshold_in)
+        top = y + max(1E-5, dThreshold_in)
+        pBound = (left, bottom, right, top)
+        aIntersect = list(index_vertex.intersection(pBound))
 
         for k in aIntersect:
             pVertex = aVertex_in[k]

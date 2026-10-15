@@ -33,28 +33,58 @@ pip install -e .
 
 ## Quick Start
 
+### 1. High-Level River Network Conditioning Pipeline
+
+Condition a raw river network in a single call:
+
 ```python
-from pyearthriver import pyrivergraph, pyvertex, pyflowline
+from pyearthriver import (
+    condition_river_network,
+    read_flowlines_from_geojson,
+    export_flowline_to_vector,
+)
 
-# Create vertices
-outlet_vertex = pyvertex(id=1, x=100.0, y=200.0)
-inlet_vertex = pyvertex(id=2, x=110.0, y=210.0)
+# Load flowlines from GeoJSON
+flowlines = read_flowlines_from_geojson("river_network.geojson")
 
-# Create flowlines
-flowlines = [
-    pyflowline(id=1, vertices=[outlet_vertex, inlet_vertex])
-]
+# Execute end-to-end topological conditioning
+graph, conditioned_flowlines = condition_river_network(
+    flowlines,
+    outlet_vertex=flowlines[-1].pVertex_end,
+    remove_braids=True,
+    remove_cycles=True,
+    compute_stream_order=True,
+)
 
-# Build river network graph
-graph = pyrivergraph(flowlines, outlet_vertex)
-
-# Analyze the network
-graph.remove_braided_river()
-graph.detect_cycles()
-
-# Export results
-graph.export_flowlines("output.geojson")
+# Export cleaned network for downstream hydrologic models (e.g. pyflowline, MOSART)
+export_flowline_to_vector(conditioned_flowlines, "conditioned_network.geojson")
 ```
+
+### 2. Fine-Grained Graph Analysis
+
+```python
+from pyearthriver import pyrivergraph, read_flowlines_from_geojson
+
+flowlines = read_flowlines_from_geojson("river_network.geojson")
+graph = pyrivergraph(flowlines)
+
+# Detect and remove braided river channels
+graph.remove_braided_river()
+
+# Detect and break cycles/loops
+graph.remove_cycle()
+
+# Calculate Strahler stream orders
+ordered_flowlines, orders = graph.define_stream_order(iFlag_so_method_in=1)
+```
+
+## Examples
+
+Runnable examples with synthetic sample datasets are available in the [`examples/`](examples/) folder:
+- **`01_basic_network_construction.py`**: Reading GeoJSON, querying sources/sinks, and exporting vector data.
+- **`02_braided_river_and_cycle_removal.py`**: Detecting braided loops, pruning secondary branches, and breaking cycles.
+- **`03_stream_ordering_and_confluences.py`**: Calculating confluence branching angles and Strahler stream orders.
+- **`04_pyflowline_integration_pipeline.py`**: The complete end-to-end conditioning pipeline used by `pyflowline`.
 
 ## Main Classes
 

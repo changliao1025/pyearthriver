@@ -19,7 +19,7 @@ Example:
     >>> graph.detect_cycles()
 """
 
-__version__ = "0.1.2"
+__version__ = "0.2.0"
 __author__ = "Chang Liao"
 
 # Import main classes for convenient access
@@ -29,10 +29,28 @@ from pyearthriver.classes.edge import pyedge
 from pyearthriver.classes.confluence import pyconfluence
 from pyearthriver.classes.rivergraph import pyrivergraph
 
+# Import pipeline workflows
+from pyearthriver.pipeline import (
+    condition_river_network,
+    compute_strahler_stream_order,
+)
+
+# Import formats I/O helpers
+from pyearthriver.formats import (
+    read_flowlines_from_geojson,
+    export_flowline_to_vector,
+    export_vertex_to_vector,
+)
+
 __all__ = [
     'pyrivergraph',
     'pyvertex',
     'pyflowline',
     'pyedge',
     'pyconfluence',
+    'condition_river_network',
+    'compute_strahler_stream_order',
+    'read_flowlines_from_geojson',
+    'export_flowline_to_vector',
+    'export_vertex_to_vector',
 ]
