@@ -61,7 +61,7 @@ def export_vertex_to_vector(
             pFeature.SetGeometry(pPoint)
             pFeature.SetField("pointid", lID + 1)
 
-            if has_attributes:
+            if has_attributes and aAttribute_data is not None:
                 pFeature.SetField("connectivity", int(aAttribute_data[lID]))
 
             pLayer.CreateFeature(pFeature)

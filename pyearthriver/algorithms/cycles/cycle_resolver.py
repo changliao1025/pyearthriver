@@ -90,7 +90,7 @@ def remove_cycles_from_graph(graph: "pyrivergraph") -> List["pyflowline"]:
                     f"end=({fl.pVertex_end.dLongitude_degree:.4f},"
                     f"{fl.pVertex_end.dLatitude_degree:.4f}) "
                     f"order={fl.iStream_order} "
-                    f"length={getattr(fl,'dLength',0):.1f}"
+                    f"length={getattr(fl, 'dLength', 0):.1f}"
                 )
 
     print(

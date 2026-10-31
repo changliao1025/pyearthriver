@@ -4,7 +4,7 @@ Graph connectivity, topological sorting, and stream segment algorithms.
 
 import logging
 from collections import deque
-from typing import TYPE_CHECKING, List, Optional, Set, Tuple
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
 
 if TYPE_CHECKING:
     from pyearthriver.classes.flowline import pyflowline
@@ -53,6 +53,59 @@ def find_outlet_vertices(graph: "pyrivergraph") -> List["pyvertex"]:
     graph.aVertex_outlet = [graph.id_to_vertex[iVertex] for iVertex in get_sinks(graph)]
     logger.info(f"Detected {len(graph.aVertex_outlet)} outlet vertices (river networks)")
     return graph.aVertex_outlet
+
+
+def find_nearest_outlet(
+    graph_or_flowlines: Union["pyrivergraph", List["pyflowline"]],
+    pVertex_target: "pyvertex",
+) -> Optional["pyvertex"]:
+    """
+    Find the flowline endpoint (outlet vertex) closest to the target vertex.
+
+    Args:
+        graph_or_flowlines: River graph instance or list of flowline objects.
+        pVertex_target: Target vertex with approximate coordinates.
+
+    Returns:
+        Optional[pyvertex]: The closest outlet vertex, or None if input is empty.
+    """
+    if isinstance(graph_or_flowlines, list):
+        flowlines = graph_or_flowlines
+        is_graph = False
+    else:
+        flowlines = graph_or_flowlines.aFlowline
+        is_graph = True
+
+    if not flowlines:
+        return None
+
+    # If it's a river graph, prioritize topological sinks if available
+    if is_graph:
+        assert not isinstance(graph_or_flowlines, list)
+        sinks = get_sinks(graph_or_flowlines)
+        if sinks:
+            dDistance_min = float("inf")
+            pVertex_nearest: Optional["pyvertex"] = None
+            for sink_id in sinks:
+                vertex = graph_or_flowlines.id_to_vertex[sink_id]
+                dDistance = vertex.calculate_distance(pVertex_target)
+                if dDistance < dDistance_min:
+                    dDistance_min = dDistance
+                    pVertex_nearest = vertex
+            if pVertex_nearest is not None:
+                return pVertex_nearest
+
+    # Fall back to checking end vertices of all flowlines
+    dDistance_min = float("inf")
+    pVertex_outlet: Optional["pyvertex"] = None
+    for pFlowline in flowlines:
+        pVertex_end = pFlowline.pVertex_end
+        dDistance = pVertex_end.calculate_distance(pVertex_target)
+        if dDistance < dDistance_min:
+            dDistance_min = dDistance
+            pVertex_outlet = pVertex_end
+
+    return pVertex_outlet
 
 
 def split_graph(graph: "pyrivergraph") -> List["pyrivergraph"]:
@@ -118,7 +171,7 @@ def sort_flowlines_from_outlet(graph: "pyrivergraph") -> List["pyflowline"]:
     """
     visited_flowlines = set()
     sorted_flowlines = []
-    queue = deque()
+    queue: deque[int] = deque()
 
     outlet_id = graph.pVertex_outlet_id
 

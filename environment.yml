@@ -1,0 +1,14 @@
+name: earthriver
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.8
+  - numpy>=1.20.0
+  - scipy>=1.7.0
+  - pyearth>=0.2.0
+  - rtree>=0.9.0
+  - cython>=0.29.0
+  - pip
+  - pip:
+    - -e .[dev]

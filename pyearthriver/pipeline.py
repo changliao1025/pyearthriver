@@ -122,6 +122,6 @@ def compute_strahler_stream_order(
     graph.define_river_confluence()
     graph.define_stream_topology()
     res = graph.define_stream_order(iFlag_so_method_in=method)
-    if isinstance(res, tuple):
+    if isinstance(res, tuple) and res[0] is not None:
         return res[0]
     return graph.aFlowline

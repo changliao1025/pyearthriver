@@ -85,7 +85,7 @@ def find_partial_parallel_sections(graph: "pyrivergraph") -> List[Dict]:
                         path_flowline_groups.append(path_flowlines)
 
                 if len(path_flowline_groups) > 1:
-                    unique_paths = []
+                    unique_paths: List[List[int]] = []
                     for path_flowlines in path_flowline_groups:
                         path_signature = tuple(sorted(path_flowlines))
                         if path_signature not in [tuple(sorted(up)) for up in unique_paths]:

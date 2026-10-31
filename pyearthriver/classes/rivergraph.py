@@ -64,12 +64,14 @@ class pyrivergraph:
                           enables outlet-based operations and optimizations.
         """
         self.aFlowline = flowlines
+        self.pVertex_outlet: Optional[pyvertex] = pVertex_outlet
         self.pVertex_outlet_id: Optional[int] = None
         self.vertex_to_id: Dict[pyvertex, int] = {}
         self.id_to_vertex: Dict[int, pyvertex] = {}
         self.aFlowline_edges: Dict[int, Tuple[int, int]] = {}
         self.aVertex: List[pyvertex] = []  # Will be populated during graph building
         self.aVertex_outlet: List[pyvertex] = []  # all the outlet vertices
+        self.aFlowline_headwater: List[pyflowline] = []
 
         # Always use custom implementation
         self.adjacency_list: DefaultDict[int, List[Tuple[int, int]]] = defaultdict(list)
@@ -86,9 +88,15 @@ class pyrivergraph:
         if pVertex_outlet is not None:
             # only preserve flowlines that can flow out to the outlet
             self.pVertex_outlet = pVertex_outlet
-            self.aVertex_outlet = [pVertex_outlet]
-            self.aFlowline = self.remove_disconnected_flowlines()
             self._set_outlet_vertex_id()
+            if self.pVertex_outlet_id is None:
+                snapped = self.find_nearest_outlet(pVertex_outlet)
+                if snapped is not None:
+                    logger.info(f"Snapped outlet vertex to closest graph outlet: {snapped}")
+                    self.pVertex_outlet = snapped
+                    self._set_outlet_vertex_id()
+            self.aVertex_outlet = [self.pVertex_outlet]
+            self.aFlowline = self.remove_disconnected_flowlines()
 
     def get_sources(self) -> List[int]:
         """Get source nodes (headwaters) with no incoming edges."""
@@ -168,6 +176,20 @@ class pyrivergraph:
 
         return find_outlet_vertices(self)
 
+    def find_nearest_outlet(self, pVertex_target: pyvertex) -> Optional[pyvertex]:
+        """
+        Find the outlet vertex closest to the target vertex.
+
+        Args:
+            pVertex_target (pyvertex): Target vertex with approximate coordinates.
+
+        Returns:
+            Optional[pyvertex]: Closest outlet vertex in the graph.
+        """
+        from pyearthriver.algorithms.topology.connectivity import find_nearest_outlet
+
+        return find_nearest_outlet(self, pVertex_target)
+
     def split_graph(self) -> List["pyrivergraph"]:
         """
         Split the graph into independent river networks, one per outlet vertex.
@@ -181,8 +203,8 @@ class pyrivergraph:
 
     def export_graph(
         self,
-        sFilename_flowline_in: str = None,
-        sFilename_vertex_in: str = None,
+        sFilename_flowline_in: Optional[str] = None,
+        sFilename_vertex_in: Optional[str] = None,
     ):
         """
         Export the graph to GeoJSON files.
@@ -199,7 +221,7 @@ class pyrivergraph:
         Returns:
             List[str]: Paths of the exported files
         """
-        aFilename_out = list()
+        aFilename_out: List[str] = list()
 
         if sFilename_flowline_in is None and sFilename_vertex_in is None:
             logger.warning("No output filename provided, nothing to export")
@@ -512,6 +534,33 @@ class pyrivergraph:
 
         return merge_flowline(self)
 
+    def split_flowline_by_length(self, dDistance: float) -> List[pyflowline]:
+        """
+        Split flowlines in the graph by maximum length and update graph state.
+
+        Args:
+            dDistance: Maximum length of each resulting flowline segment in meters.
+
+        Returns:
+            List[pyflowline]: Updated flowlines in the graph.
+        """
+        from pyearthriver.algorithms.topology.segmentation import split_flowline_by_length
+
+        return split_flowline_by_length(self, dDistance)
+
+    def split_flowline_to_edge(self) -> Tuple[List[pyflowline], List[pyedge]]:
+        """
+        Split flowlines in the graph into single-edge flowlines and update graph state.
+
+        Returns:
+            Tuple[List[pyflowline], List[pyedge]]:
+                - List of 1-edge pyflowline instances with inherited attributes
+                - Flat list of pyedge instances
+        """
+        from pyearthriver.algorithms.topology.segmentation import split_flowline_to_edge
+
+        return split_flowline_to_edge(self)
+
     # ========================================================================
     # STREAM ANALYSIS & TOPOLOGY
     # ========================================================================
@@ -577,7 +626,9 @@ class pyrivergraph:
 
         return define_stream_topology(self)
 
-    def define_stream_order(self, iFlag_so_method_in: int = 1) -> List[pyflowline]:
+    def define_stream_order(
+        self, iFlag_so_method_in: int = 1
+    ) -> Tuple[Optional[List[pyflowline]], Optional[List[int]]]:
         """
         Define stream order for all flowlines using graph-based approach with confluence analysis.
         """

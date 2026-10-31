@@ -90,7 +90,7 @@ def _read_flowlines_from_geojson_dict(
             continue
 
         for line_coord in lines_coords:
-            unique_pts = []
+            unique_pts: List[Any] = []
             for pt in line_coord:
                 if not unique_pts or (pt[0] != unique_pts[-1][0] or pt[1] != unique_pts[-1][1]):
                     unique_pts.append(pt)
@@ -181,10 +181,10 @@ def read_flowlines_from_vector(
         RuntimeError: If GDAL/OGR cannot open the vector file.
     """
     if isinstance(source, dict):
-        flowlines = _read_flowlines_from_geojson_dict(source, id_field=id_field)
+        result_flowlines = _read_flowlines_from_geojson_dict(source, id_field=id_field)
         if return_spatial_ref:
-            return flowlines, None
-        return flowlines
+            return result_flowlines, None
+        return result_flowlines
 
     filepath = os.fspath(source)
     if not os.path.exists(filepath):
@@ -298,7 +298,7 @@ def read_flowlines_from_vector(
                 continue
 
             for raw_pts in lines_coords:
-                unique_pts = []
+                unique_pts: List[Any] = []
                 for pt in raw_pts:
                     if not unique_pts or (pt[0] != unique_pts[-1][0] or pt[1] != unique_pts[-1][1]):
                         unique_pts.append(pt)

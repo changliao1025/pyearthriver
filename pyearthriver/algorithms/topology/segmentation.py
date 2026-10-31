@@ -3,7 +3,7 @@ Topology segmentation and merging algorithms for river networks.
 """
 
 import logging
-from typing import TYPE_CHECKING, List, Optional, Set
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple, Union
 
 import numpy as np
 
@@ -41,7 +41,7 @@ def build_bidirectional_segment(
     Returns:
         List[int]: List of flowline indices in upstream-to-downstream order.
     """
-    upstream_segment = []
+    upstream_segment: List[int] = []
     downstream_segment = [start_flowline_idx]
 
     # Extend upstream from start vertex
@@ -95,7 +95,7 @@ def find_linear_segments(graph: "pyrivergraph") -> List[List[int]]:
         List[List[int]]: List of linear segments (flowline indices ordered upstream to downstream).
     """
     linear_segments = []
-    processed_flowlines = set()
+    processed_flowlines: Set[int] = set()
 
     merge_vertices = set()
     for vertex_id in graph.id_to_vertex.keys():
@@ -336,3 +336,158 @@ def split_flowline(
     if iFlag_graph_update == 1:
         graph._update_graph_flowlines(aFlowline_out)
     return aFlowline_out
+
+
+def split_edge_by_length(pEdge_in: pyedge, dLength_in: float) -> List[pyedge]:
+    """
+    Split a pyedge into segments of maximum length dLength_in.
+
+    Delegates to pyedge.split_by_length from pyearthriver (which utilizes
+    optimal spherical slerp interpolation) and ensures the subdivided endpoints
+    are pyvertex instances with attributes preserved.
+
+    Args:
+        pEdge_in (pyedge): The input edge to split.
+        dLength_in (float): The maximum allowed segment length in meters.
+
+    Returns:
+        List[pyedge]: List of split edge segments.
+    """
+    if dLength_in <= 0:
+        raise ValueError("Length threshold must be positive.")
+
+    if pEdge_in.dLength <= dLength_in:
+        return [pEdge_in]
+
+    from pyearthriver.classes.vertex import pyvertex
+
+    aEdge_raw = pEdge_in.split_by_length(dLength_in)
+    aEdge_out: List[pyedge] = []
+    for edge in aEdge_raw:
+        v_start = (
+            edge.pVertex_start
+            if isinstance(edge.pVertex_start, pyvertex)
+            else pyvertex(edge.pVertex_start.__dict__)
+        )
+        v_end = (
+            edge.pVertex_end
+            if isinstance(edge.pVertex_end, pyvertex)
+            else pyvertex(edge.pVertex_end.__dict__)
+        )
+        sub_edge = pyedge(v_start, v_end)
+        sub_edge.lEdgeID = pEdge_in.lEdgeID
+        sub_edge.lEdgeIndex = pEdge_in.lEdgeIndex
+        sub_edge.lIndex_upstream = pEdge_in.lIndex_upstream
+        sub_edge.lIndex_downstream = pEdge_in.lIndex_downstream
+        aEdge_out.append(sub_edge)
+
+    return aEdge_out
+
+
+def split_flowline_by_length(
+    graph_or_flowlines: Union["pyrivergraph", List[pyflowline]],
+    dDistance: float,
+) -> List[pyflowline]:
+    """
+    Split flowlines into segments whose total length does not exceed dDistance.
+
+    Can be called with either a pyrivergraph instance or a list of pyflowline objects.
+    When called with a pyrivergraph instance, the graph's internal flowlines and
+    topological indices are automatically updated.
+
+    Args:
+        graph_or_flowlines: River graph instance or list of flowlines.
+        dDistance (float): Maximum length of each resulting flowline segment in meters.
+
+    Returns:
+        List[pyflowline]: Split flowlines.
+    """
+    if dDistance <= 0:
+        raise ValueError("Distance threshold must be positive.")
+
+    if isinstance(graph_or_flowlines, list):
+        aFlowline_in: List[pyflowline] = graph_or_flowlines
+        is_graph = False
+    else:
+        aFlowline_in = graph_or_flowlines.aFlowline
+        is_graph = True
+
+    aFlowline_out: List[pyflowline] = []
+    iFlag_graph_update = 0
+
+    for pFlowline in aFlowline_in:
+        if pFlowline.dLength <= dDistance:
+            aFlowline_out.append(pFlowline)
+            continue
+
+        aEdge_subdivided: List[pyedge] = []
+        for pEdge in pFlowline.aEdge:
+            aEdge_subdivided.extend(split_edge_by_length(pEdge, dDistance))
+
+        current_edges: List[pyedge] = []
+        current_length: float = 0.0
+
+        for edge in aEdge_subdivided:
+            if current_edges and (current_length + edge.dLength > dDistance):
+                pNewFlowline = pyflowline(current_edges)
+                pNewFlowline.copy_attributes(pFlowline)
+                aFlowline_out.append(pNewFlowline)
+                current_edges = [edge]
+                current_length = edge.dLength
+            else:
+                current_edges.append(edge)
+                current_length += edge.dLength
+
+        if current_edges:
+            pNewFlowline = pyflowline(current_edges)
+            pNewFlowline.copy_attributes(pFlowline)
+            aFlowline_out.append(pNewFlowline)
+
+        iFlag_graph_update = 1
+
+    if is_graph and iFlag_graph_update == 1:
+        assert not isinstance(graph_or_flowlines, list)
+        graph_or_flowlines._update_graph_flowlines(aFlowline_out)
+
+    return aFlowline_out
+
+
+def split_flowline_to_edge(
+    graph_or_flowlines: Union["pyrivergraph", List[pyflowline]],
+) -> Tuple[List[pyflowline], List[pyedge]]:
+    """
+    Split flowlines into single-edge flowlines and extract all edges.
+
+    Preserves parent flowline attributes on each single-edge flowline.
+    If called with a pyrivergraph instance, updates the graph's internal state.
+
+    Args:
+        graph_or_flowlines: River graph instance or list of flowlines.
+
+    Returns:
+        Tuple[List[pyflowline], List[pyedge]]:
+            - List of 1-edge pyflowline instances with inherited attributes
+            - Flat list of pyedge instances
+    """
+    if isinstance(graph_or_flowlines, list):
+        aFlowline_in: List[pyflowline] = graph_or_flowlines
+        is_graph = False
+    else:
+        aFlowline_in = graph_or_flowlines.aFlowline
+        is_graph = True
+
+    aFlowline_out: List[pyflowline] = []
+    aEdge_out: List[pyedge] = []
+
+    for pFlowline in aFlowline_in:
+        for pEdge in pFlowline.aEdge:
+            aEdge_out.append(pEdge)
+            pNewFlowline = pyflowline([pEdge])
+            pNewFlowline.copy_attributes(pFlowline)
+            aFlowline_out.append(pNewFlowline)
+
+    if is_graph:
+        assert not isinstance(graph_or_flowlines, list)
+        graph_or_flowlines._update_graph_flowlines(aFlowline_out)
+
+    return aFlowline_out, aEdge_out

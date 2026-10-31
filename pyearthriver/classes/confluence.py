@@ -57,6 +57,7 @@ class pyconfluence:
         # Initialize instance attributes with default values
         self.lIndex = -1
         self.lConfluenceID = -1
+        self.lVertexID = -1
         self.dAngle_upstream = 0.0
         self.nUpstream = len(aFlowline_upstream_in)
         self.nDownstream = len(aFlowline_downstream_in)
@@ -68,7 +69,7 @@ class pyconfluence:
             self.aFlowline_downstream = (
                 aFlowline_downstream_in  # to support braided flowlines in the future
             )
-        except:
+        except Exception:
             print("Initialization of confluence failed!")
 
         return

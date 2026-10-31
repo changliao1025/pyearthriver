@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from osgeo import ogr, osr
 from pyearth.gis.gdal.gdal_vector_format_support import get_vector_driver_from_filename
@@ -10,7 +10,7 @@ def export_flowline_to_vector(
     aFlowline_in: List,
     sFilename_vector_out: str,
     iFlag_projected_in: Optional[int] = None,
-    pSpatial_reference_in: Optional[osr.SpatialReference] = None,
+    pSpatial_reference_in: Optional[Union[osr.SpatialReference, str]] = None,
     aAttribute_field: Optional[List[str]] = None,
     aAttribute_data: Optional[List[List[Any]]] = None,
     aAttribute_dtype: Optional[List[str]] = None,
@@ -44,12 +44,28 @@ def export_flowline_to_vector(
         is_projected = iFlag_projected_in == 1 if iFlag_projected_in is not None else False
 
         if pSpatial_reference_in is None:
-            pSpatial_reference_in = osr.SpatialReference()
-            pSpatial_reference_in.ImportFromEPSG(4326)  # WGS84 lat/lon
+            spatial_ref = osr.SpatialReference()
+            spatial_ref.ImportFromEPSG(4326)  # WGS84 lat/lon
+        elif isinstance(pSpatial_reference_in, str):
+            spatial_ref = osr.SpatialReference()
+            spatial_ref.ImportFromWkt(pSpatial_reference_in)
+        else:
+            spatial_ref = pSpatial_reference_in
+
+        spatial_ref.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
 
         # Validate attributes
-        has_attributes = all([aAttribute_field, aAttribute_data, aAttribute_dtype])
-        if has_attributes:
+        has_attributes = (
+            aAttribute_field is not None
+            and aAttribute_data is not None
+            and aAttribute_dtype is not None
+        )
+        if (
+            has_attributes
+            and aAttribute_field is not None
+            and aAttribute_data is not None
+            and aAttribute_dtype is not None
+        ):
             nAttribute1, nAttribute2, nAttribute3 = (
                 len(aAttribute_field),
                 len(aAttribute_data),
@@ -65,15 +81,17 @@ def export_flowline_to_vector(
         # Get appropriate driver based on file extension
         pDriver = get_vector_driver_from_filename(sFilename_vector_out)
         pDataset = pDriver.CreateDataSource(sFilename_vector_out)
-        pLayer = pDataset.CreateLayer("flowline", pSpatial_reference_in, ogr.wkbLineString)
+        pLayer = pDataset.CreateLayer("flowline", spatial_ref, ogr.wkbLineString)
 
         # Add ID field
         pLayer.CreateField(ogr.FieldDefn("lineid", ogr.OFTInteger64))
 
         # Add attribute fields
         dtype_to_ogr = {"int": ogr.OFTInteger64, "float": ogr.OFTReal}
-        if has_attributes:
+        if has_attributes and aAttribute_field is not None and aAttribute_dtype is not None:
             for field, dtype in zip(aAttribute_field, aAttribute_dtype):
+                if field == "lineid":
+                    continue
                 if dtype not in dtype_to_ogr:
                     raise ValueError(f'Unsupported data type: {dtype}. Must be "int" or "float"')
                 pLayer.CreateField(ogr.FieldDefn(field, dtype_to_ogr[dtype]))
@@ -93,9 +111,19 @@ def export_flowline_to_vector(
 
             pFeature = ogr.Feature(pLayerDefn)
             pFeature.SetGeometry(pLine)
-            pFeature.SetField("lineid", lID + 1)
+            flowline_id = (
+                pFlowline.lFlowlineID
+                if (pFlowline.lFlowlineID is not None and pFlowline.lFlowlineID > 0)
+                else (lID + 1)
+            )
+            pFeature.SetField("lineid", int(flowline_id))
 
-            if has_attributes:
+            if (
+                has_attributes
+                and aAttribute_field is not None
+                and aAttribute_dtype is not None
+                and aAttribute_data is not None
+            ):
                 for sField, dtype, data_list in zip(
                     aAttribute_field, aAttribute_dtype, aAttribute_data
                 ):

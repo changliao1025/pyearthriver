@@ -5,7 +5,7 @@ Topology pruning and filtering algorithms for river networks.
 import logging
 import os
 from collections import defaultdict, deque
-from typing import TYPE_CHECKING, List, Optional, Set
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple
 
 if TYPE_CHECKING:
     from pyearthriver.classes.flowline import pyflowline
@@ -216,7 +216,9 @@ def remove_duplicate_flowlines_direction_insensitive(
 
             if has_opposite_directions:
                 if graph.pVertex_outlet_id is not None:
-                    flowline_path_lengths = []
+                    flowline_path_lengths: List[
+                        Tuple[float, int, "pyflowline", Tuple[int, int]]
+                    ] = []
                     for idx, flowline, (start_id, end_id) in flowline_group:
                         paths_to_outlet = graph._find_all_paths(
                             end_id, graph.pVertex_outlet_id, max_depth=1000
@@ -237,9 +239,7 @@ def remove_duplicate_flowlines_direction_insensitive(
                             )
 
                     flowline_path_lengths.sort(key=lambda x: x[0])
-                    shortest_path_length, closest_idx, closest_flowline, _ = flowline_path_lengths[
-                        0
-                    ]
+                    _, closest_idx, closest_flowline, _ = flowline_path_lengths[0]
                     unique_flowlines.append(closest_flowline)
 
                     for (
