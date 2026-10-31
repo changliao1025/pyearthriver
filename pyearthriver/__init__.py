@@ -38,6 +38,7 @@ from pyearthriver.pipeline import (
 # Import formats I/O helpers
 from pyearthriver.formats import (
     read_flowlines_from_geojson,
+    read_flowlines_from_vector,
     export_flowline_to_vector,
     export_vertex_to_vector,
 )
@@ -51,6 +52,7 @@ __all__ = [
     'condition_river_network',
     'compute_strahler_stream_order',
     'read_flowlines_from_geojson',
+    'read_flowlines_from_vector',
     'export_flowline_to_vector',
     'export_vertex_to_vector',
 ]
