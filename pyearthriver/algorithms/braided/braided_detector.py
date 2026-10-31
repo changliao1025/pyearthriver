@@ -4,11 +4,11 @@ Detection algorithms for braided channels, parallel paths, and reconvergence poi
 
 import logging
 from collections import defaultdict, deque
-from typing import List, Dict, Set, Tuple, Optional, DefaultDict, TYPE_CHECKING
+from typing import TYPE_CHECKING, DefaultDict, Dict, List, Optional, Set, Tuple
 
 if TYPE_CHECKING:
-    from pyearthriver.classes.rivergraph import pyrivergraph
     from pyearthriver.classes.flowline import pyflowline
+    from pyearthriver.classes.rivergraph import pyrivergraph
 
 logger = logging.getLogger(__name__)
 
@@ -75,9 +75,7 @@ def find_partial_parallel_sections(graph: "pyrivergraph") -> List[Dict]:
         reconvergence_id = find_reconvergence_points(graph, divergence_id)
 
         if reconvergence_id is not None:
-            divergent_paths = graph._find_all_paths(
-                divergence_id, reconvergence_id, max_depth=8
-            )
+            divergent_paths = graph._find_all_paths(divergence_id, reconvergence_id, max_depth=8)
 
             if len(divergent_paths) > 1:
                 path_flowline_groups = []
@@ -90,9 +88,7 @@ def find_partial_parallel_sections(graph: "pyrivergraph") -> List[Dict]:
                     unique_paths = []
                     for path_flowlines in path_flowline_groups:
                         path_signature = tuple(sorted(path_flowlines))
-                        if path_signature not in [
-                            tuple(sorted(up)) for up in unique_paths
-                        ]:
+                        if path_signature not in [tuple(sorted(up)) for up in unique_paths]:
                             unique_paths.append(path_flowlines)
 
                     if len(unique_paths) > 1:
@@ -124,9 +120,7 @@ def find_reconvergence_points(
     Returns:
         Optional[int]: The first common reconvergence vertex ID, or None.
     """
-    downstream_vertices = [
-        neighbor_id for neighbor_id, _ in graph.adjacency_list[divergence_id]
-    ]
+    downstream_vertices = [neighbor_id for neighbor_id, _ in graph.adjacency_list[divergence_id]]
 
     if len(downstream_vertices) < 2:
         return None
@@ -160,9 +154,7 @@ def find_first_common_vertex(
     return None
 
 
-def get_reachable_vertices(
-    graph: "pyrivergraph", start_id: int, max_depth: int
-) -> List[int]:
+def get_reachable_vertices(graph: "pyrivergraph", start_id: int, max_depth: int) -> List[int]:
     """
     Get all vertices reachable from a starting vertex within max_depth.
     """

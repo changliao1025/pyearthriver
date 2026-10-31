@@ -1,4 +1,3 @@
-
 """
 PyFlowline class for representing flowlines in river network models.
 
@@ -10,14 +9,16 @@ forming a continuous path in a stream network, with associated hydrological prop
 import copy
 import json
 from json import JSONEncoder
-from typing import List, Dict, Any, Optional, Union
-import numpy as np
+from typing import Any, Dict, List, Optional, Union
 
-from pyearth.toolbox.mesh.point import pypoint
+import numpy as np
 from pyearth.toolbox.mesh.line import pyline
+from pyearth.toolbox.mesh.point import pypoint
 from pyearth.toolbox.mesh.polyline import pypolyline
-from .vertex import pyvertex
+
 from .edge import pyedge
+from .vertex import pyvertex
+
 
 class FlowlineClassEncoder(JSONEncoder):
     """
@@ -26,6 +27,7 @@ class FlowlineClassEncoder(JSONEncoder):
     Handles numpy data types, pyvertex, and pyedge objects, converting them to
     native Python types for JSON serialization.
     """
+
     def default(self, obj):
         if isinstance(obj, np.integer):
             return int(obj)
@@ -127,7 +129,7 @@ class pyflowline(pypolyline):
             if edge is None:
                 raise ValueError(f"Edge at index {i} cannot be None")
 
-            if hasattr(edge.pVertex_start, '__dict__') and hasattr(edge.pVertex_end, '__dict__'):
+            if hasattr(edge.pVertex_start, "__dict__") and hasattr(edge.pVertex_end, "__dict__"):
                 point_start = pypoint(edge.pVertex_start.__dict__)
                 point_end = pypoint(edge.pVertex_end.__dict__)
                 line = pyline(point_start, point_end)
@@ -166,16 +168,20 @@ class pyflowline(pypolyline):
         self.pVertex_end: pyvertex = pyvertex(self.pPoint_end.__dict__)
         # Convert lines to edges properly
         self.aEdge = aEdge
-        self.aVertex: List[pyvertex] = [pyvertex(v.__dict__) if not isinstance(v, pyvertex) else v for v in self.aPoint]
+        self.aVertex: List[pyvertex] = [
+            pyvertex(v.__dict__) if not isinstance(v, pyvertex) else v for v in self.aPoint
+        ]
 
         # Counts
         self.nEdge: int = len(self.aEdge)
         self.nVertex: int = len(self.aVertex)
 
         # Connection lists (initialized as None, populated during network topology analysis)
-        #self.lFlowlineIndex_downstream: Optional[int] = None #this will be removed when braided flowlines are supported
+        # self.lFlowlineIndex_downstream: Optional[int] = None #this will be removed when braided flowlines are supported
         self.aFlowline_upstream: Optional[List] = None
-        self.aFlowline_downstream: Optional[List] = None #this will support braided flowlines in the future
+        self.aFlowline_downstream: Optional[List] = (
+            None  # this will support braided flowlines in the future
+        )
         self.aFlowlineID_start_start: Optional[List[int]] = None
         self.aFlowlineID_start_end: Optional[List[int]] = None
         self.aFlowlineID_end_start: Optional[List[int]] = None
@@ -188,10 +194,12 @@ class pyflowline(pypolyline):
         Returns:
             str: Detailed representation including ID, indices, edge count, and length
         """
-        return (f"pyflowline(ID={self.lFlowlineID}, Index={self.lFlowlineIndex}, "
-                f"Edges={self.nEdge}, Vertices={self.nVertex}, "
-                f"Length={self.dLength:.2f}m, StreamOrder={self.iStream_order}, "
-                f"Sinuosity={self.dSinuosity:.3f})")
+        return (
+            f"pyflowline(ID={self.lFlowlineID}, Index={self.lFlowlineIndex}, "
+            f"Edges={self.nEdge}, Vertices={self.nVertex}, "
+            f"Length={self.dLength:.2f}m, StreamOrder={self.iStream_order}, "
+            f"Sinuosity={self.dSinuosity:.3f})"
+        )
 
     def __str__(self) -> str:
         """
@@ -207,7 +215,6 @@ class pyflowline(pypolyline):
         hash using the base class hash function.
         """
         return super().__hash__()
-
 
     def __eq__(self, other: Any) -> bool:
         """
@@ -319,8 +326,7 @@ class pyflowline(pypolyline):
         Returns:
             bool: True if flowline has no upstream connections
         """
-        return (self.aFlowline_upstream is None or
-                len(self.aFlowline_upstream) == 0)
+        return self.aFlowline_upstream is None or len(self.aFlowline_upstream) == 0
 
     def is_outlet(self) -> bool:
         """
@@ -329,10 +335,9 @@ class pyflowline(pypolyline):
         Returns:
             bool: True if flowline has no downstream connection
         """
-        return (self.aFlowline_downstream is None or
-                len(self.aFlowline_downstream) == 0)
+        return self.aFlowline_downstream is None or len(self.aFlowline_downstream) == 0
 
-    def check_upstream(self, other: 'pyflowline') -> bool:
+    def check_upstream(self, other: "pyflowline") -> bool:
         """
         Check whether another flowline is directly upstream.
 
@@ -355,7 +360,7 @@ class pyflowline(pypolyline):
 
         return v0 == v3
 
-    def check_downstream(self, other: 'pyflowline') -> bool:
+    def check_downstream(self, other: "pyflowline") -> bool:
         """
         Check whether another flowline is directly downstream.
 
@@ -378,7 +383,7 @@ class pyflowline(pypolyline):
 
         return v1 == v2
 
-    def merge_upstream(self, other: 'pyflowline') -> 'pyflowline':
+    def merge_upstream(self, other: "pyflowline") -> "pyflowline":
         """
         Merge with an upstream flowline to create a new combined flowline.
 
@@ -438,12 +443,14 @@ class pyflowline(pypolyline):
             pFlowline_out.pVertex_start = pVertex_start1
             pFlowline_out.pVertex_end = pVertex_end2
         else:
-            raise ValueError("Flowlines are not properly connected for merging. "
-                           f"Upstream end ({pVertex_end1}) must match downstream start ({pVertex_start2})")
+            raise ValueError(
+                "Flowlines are not properly connected for merging. "
+                f"Upstream end ({pVertex_end1}) must match downstream start ({pVertex_start2})"
+            )
 
         return pFlowline_out
 
-    def copy_attributes(self, other: 'pyflowline') -> None:
+    def copy_attributes(self, other: "pyflowline") -> None:
         """
         Copy attributes from another flowline.
 
@@ -470,7 +477,7 @@ class pyflowline(pypolyline):
         self.iFlag_right = other.iFlag_right
         self.iFlag_left = other.iFlag_left
         self.iFlag_keep = other.iFlag_keep
-        #self.lFlowlineIndex_downstream = other.lFlowlineIndex_downstream
+        # self.lFlowlineIndex_downstream = other.lFlowlineIndex_downstream
 
     def calculate_flowline_sinuosity(self) -> float:
         """
@@ -524,7 +531,7 @@ class pyflowline(pypolyline):
             self.calculate_flowline_sinuosity()
         return self.dSinuosity
 
-    def copy(self) -> 'pyflowline':
+    def copy(self) -> "pyflowline":
         """
         Create a deep copy of the flowline.
 
@@ -546,7 +553,7 @@ class pyflowline(pypolyline):
 
         return new_flowline
 
-    def reverse(self) -> 'pyflowline':
+    def reverse(self) -> "pyflowline":
         """
         Create a reversed copy of the flowline.
 
@@ -669,17 +676,26 @@ class pyflowline(pypolyline):
             >>> flowline = pyflowline([edge1, edge2])
             >>> json_str = flowline.tojson()
         """
-        aSkip = ['aEdge', 'aVertex', 'aFlowlineID_start_start','aLine', 'aPoint', 'pPoint_start', 'pPoint_end',
-                 'aFlowlineID_start_end', 'aFlowlineID_end_start',
-                 'aFlowlineID_end_end', 'aFlowline_upstream', 'aFlowline_downstream']
+        aSkip = [
+            "aEdge",
+            "aVertex",
+            "aFlowlineID_start_start",
+            "aLine",
+            "aPoint",
+            "pPoint_start",
+            "pPoint_end",
+            "aFlowlineID_start_end",
+            "aFlowlineID_end_start",
+            "aFlowlineID_end_end",
+            "aFlowline_upstream",
+            "aFlowline_downstream",
+        ]
 
         obj = self.__dict__.copy()
         for sKey in aSkip:
             obj.pop(sKey, None)
 
-        sJson = json.dumps(obj,
-                          sort_keys=True,
-                          indent=4,
-                          ensure_ascii=True,
-                          cls=FlowlineClassEncoder)
+        sJson = json.dumps(
+            obj, sort_keys=True, indent=4, ensure_ascii=True, cls=FlowlineClassEncoder
+        )
         return sJson

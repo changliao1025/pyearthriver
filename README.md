@@ -40,12 +40,12 @@ Condition a raw river network in a single call:
 ```python
 from pyearthriver import (
     condition_river_network,
-    read_flowlines_from_geojson,
+    read_flowlines_from_vector,
     export_flowline_to_vector,
 )
 
-# Load flowlines from GeoJSON
-flowlines = read_flowlines_from_geojson("river_network.geojson")
+# Load flowlines from vector (GeoJSON, Shapefile, GeoPackage, etc.)
+flowlines = read_flowlines_from_vector("river_network.geojson")
 
 # Execute end-to-end topological conditioning
 graph, conditioned_flowlines = condition_river_network(
@@ -63,9 +63,9 @@ export_flowline_to_vector(conditioned_flowlines, "conditioned_network.geojson")
 ### 2. Fine-Grained Graph Analysis
 
 ```python
-from pyearthriver import pyrivergraph, read_flowlines_from_geojson
+from pyearthriver import pyrivergraph, read_flowlines_from_vector
 
-flowlines = read_flowlines_from_geojson("river_network.geojson")
+flowlines = read_flowlines_from_vector("river_network.geojson")
 graph = pyrivergraph(flowlines)
 
 # Detect and remove braided river channels

@@ -5,7 +5,7 @@ Configuration is in pyproject.toml (PEP 517/518).
 Cython extensions are handled within this file.
 """
 
-from setuptools import setup, Extension
+from setuptools import Extension, setup
 
 
 def get_extensions():
@@ -19,6 +19,7 @@ def get_extensions():
     # Try to import Cython, but don't fail if it's not available
     try:
         from Cython.Build import cythonize
+
         HAVE_CYTHON = True
     except ImportError:
         HAVE_CYTHON = False
@@ -51,8 +52,8 @@ def get_extensions():
     if HAVE_CYTHON:
         extensions = cythonize(
             extensions,
-            compiler_directives={'language_level': "3"},
-            force=False  # Only rebuild if source changed
+            compiler_directives={"language_level": "3"},
+            force=False,  # Only rebuild if source changed
         )
 
     return extensions

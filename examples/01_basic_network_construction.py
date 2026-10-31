@@ -3,18 +3,15 @@
 Example 01: Basic River Network Construction and Exploration.
 
 Demonstrates:
-1. Loading river flowlines from a GeoJSON file using read_flowlines_from_geojson.
+1. Loading river flowlines from a vector file using read_flowlines_from_vector.
 2. Building a directed pyrivergraph.
 3. Querying river network topology (vertices, headwaters/sources, outlets/sinks).
 4. Exporting the processed flowlines.
 """
 
 import os
-from pyearthriver import (
-    pyrivergraph,
-    read_flowlines_from_geojson,
-    export_flowline_to_vector,
-)
+
+from pyearthriver import export_flowline_to_vector, pyrivergraph, read_flowlines_from_vector
 
 
 def main():
@@ -23,7 +20,7 @@ def main():
     geojson_path = os.path.join(data_dir, "linear_network.geojson")
 
     print(f"Loading river flowlines from: {geojson_path}")
-    flowlines = read_flowlines_from_geojson(geojson_path)
+    flowlines = read_flowlines_from_vector(geojson_path)
     print(f"Loaded {len(flowlines)} flowline reach(es).")
 
     for f in flowlines:
@@ -31,7 +28,9 @@ def main():
 
     # 2. Build the river network graph
     outlet_vertex = flowlines[-1].pVertex_end
-    print(f"\nBuilding pyrivergraph with outlet at: ({outlet_vertex.dLongitude_degree:.3f}, {outlet_vertex.dLatitude_degree:.3f})")
+    print(
+        f"\nBuilding pyrivergraph with outlet at: ({outlet_vertex.dLongitude_degree:.3f}, {outlet_vertex.dLatitude_degree:.3f})"
+    )
     graph = pyrivergraph(flowlines, outlet_vertex)
 
     # 3. Query network graph metrics

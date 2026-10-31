@@ -6,13 +6,14 @@ Unit tests for pyearthriver core classes:
 - pyconfluence
 """
 
-import unittest
 import json
-from tests import conftest  # Ensures environment setup before imports
-from pyearthriver.classes.vertex import pyvertex
+import unittest
+
+from pyearthriver.classes.confluence import pyconfluence
 from pyearthriver.classes.edge import pyedge
 from pyearthriver.classes.flowline import pyflowline
-from pyearthriver.classes.confluence import pyconfluence
+from pyearthriver.classes.vertex import pyvertex
+from tests import conftest  # Ensures environment setup before imports
 
 
 class TestPyVertex(unittest.TestCase):
@@ -208,7 +209,7 @@ class TestPyEdge(unittest.TestCase):
         edge.set_upstream_index(1)
         edge.set_downstream_index(2)
 
-        rev = edge.reverse()
+        rev = edge.reversed()
         self.assertEqual(rev.pVertex_start, self.v2)
         self.assertEqual(rev.pVertex_end, self.v1)
         self.assertEqual(rev.lIndex_upstream, 2)
@@ -290,7 +291,9 @@ class TestPyConfluence(unittest.TestCase):
 
     def setUp(self):
         # Confluence vertex at (0, 0)
-        self.v_center = pyvertex({"dLongitude_degree": 0.0, "dLatitude_degree": 0.0, "lVertexID": 0})
+        self.v_center = pyvertex(
+            {"dLongitude_degree": 0.0, "dLatitude_degree": 0.0, "lVertexID": 0}
+        )
         # Two upstream branches
         # Branch 1 starts at (-1, 0) and flows into (0, 0)
         v_up1 = pyvertex({"dLongitude_degree": -1.0, "dLatitude_degree": 0.0, "lVertexID": 1})

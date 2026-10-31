@@ -3,12 +3,13 @@ Topology segmentation and merging algorithms for river networks.
 """
 
 import logging
-from typing import List, Optional, Set, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional, Set
+
 import numpy as np
 
+from pyearthriver.algorithms.spatial import find_vertex_on_edge
 from pyearthriver.classes.edge import pyedge
 from pyearthriver.classes.flowline import pyflowline
-from pyearthriver.algorithms.spatial import find_vertex_on_edge
 
 if TYPE_CHECKING:
     from pyearthriver.classes.rivergraph import pyrivergraph
@@ -61,9 +62,7 @@ def build_bidirectional_segment(
     # Extend downstream from end vertex
     current_end = end_vertex_id
     while current_end in merge_vertices:
-        downstream_flowlines = [
-            fl_idx for neighbor_id, fl_idx in graph.adjacency_list[current_end]
-        ]
+        downstream_flowlines = [fl_idx for neighbor_id, fl_idx in graph.adjacency_list[current_end]]
 
         if len(downstream_flowlines) == 1:
             downstream_flowline_idx = downstream_flowlines[0]
@@ -103,9 +102,7 @@ def find_linear_segments(graph: "pyrivergraph") -> List[List[int]]:
         if graph.in_degree[vertex_id] == 1 and graph.out_degree[vertex_id] == 1:
             merge_vertices.add(vertex_id)
 
-    logger.debug(
-        f"Found {len(merge_vertices)} degree-2 vertices for potential merging"
-    )
+    logger.debug(f"Found {len(merge_vertices)} degree-2 vertices for potential merging")
 
     for flowline_idx, (start_id, end_id) in graph.aFlowline_edges.items():
         if flowline_idx in processed_flowlines:
@@ -123,13 +120,9 @@ def find_linear_segments(graph: "pyrivergraph") -> List[List[int]]:
         if len(segment) > 1:
             linear_segments.append(segment)
             processed_flowlines.update(segment)
-            logger.debug(
-                f"Found linear segment with {len(segment)} flowlines: {segment}"
-            )
+            logger.debug(f"Found linear segment with {len(segment)} flowlines: {segment}")
 
-    logger.info(
-        f"Found {len(linear_segments)} linear segments for potential merging"
-    )
+    logger.info(f"Found {len(linear_segments)} linear segments for potential merging")
     return linear_segments
 
 
@@ -192,9 +185,7 @@ def merge_flowline(graph: "pyrivergraph") -> List[pyflowline]:
                 continue
 
             try:
-                segment_flowlines = [
-                    flowlines[idx] for idx in segment if idx < len(flowlines)
-                ]
+                segment_flowlines = [flowlines[idx] for idx in segment if idx < len(flowlines)]
 
                 if len(segment_flowlines) < 2:
                     continue
@@ -203,9 +194,7 @@ def merge_flowline(graph: "pyrivergraph") -> List[pyflowline]:
                 if merged_flowline is not None:
                     merged_flowlines.append(merged_flowline)
                     processed_indices.update(segment)
-                    logger.debug(
-                        f"Merged {len(segment_flowlines)} flowlines into single flowline"
-                    )
+                    logger.debug(f"Merged {len(segment_flowlines)} flowlines into single flowline")
 
             except Exception as e:
                 logger.error(f"Error merging segment {segment}: {e}")
@@ -286,9 +275,7 @@ def split_flowline(
                         pVertex0 = aVertex_in[k]
                         if pVertex0.lFlowlineID == pFlowline.lFlowlineID:
                             iFlag_exist = 1
-                            distance = pEdge.pVertex_start.calculate_distance(
-                                pVertex0
-                            )
+                            distance = pEdge.pVertex_start.calculate_distance(pVertex0)
                             if distance == 0:
                                 continue
                             iPart = iPart + 1
@@ -305,9 +292,7 @@ def split_flowline(
                             aVertex_all.append(pVertex_dummy)
                 else:
                     iFlag_exist, npoint, aIndex = (
-                        find_vertex_on_edge(aVertex_in, pEdge)
-                        if aVertex_in
-                        else (0, 0, [])
+                        find_vertex_on_edge(aVertex_in, pEdge) if aVertex_in else (0, 0, [])
                     )
                     if iFlag_exist == 1:
                         for m in range(npoint):
@@ -329,9 +314,7 @@ def split_flowline(
             if iPart >= 2:
                 nLine = iPart - 1
                 aVertex_index = [
-                    aVertex_all.index(pVertex)
-                    for pVertex in aVertex
-                    if pVertex in aVertex_all
+                    aVertex_all.index(pVertex) for pVertex in aVertex if pVertex in aVertex_all
                 ]
 
                 for k in range(nLine):
@@ -339,8 +322,7 @@ def split_flowline(
                     s = aVertex_index[k + 1]
                     if s != t:
                         aEdge = [
-                            pyedge.create(aVertex_all[l], aVertex_all[l + 1])
-                            for l in range(t, s)
+                            pyedge.create(aVertex_all[l], aVertex_all[l + 1]) for l in range(t, s)
                         ]
                         aEdge = [edge for edge in aEdge if edge is not None]
                         pFlowline1 = pyflowline(aEdge)

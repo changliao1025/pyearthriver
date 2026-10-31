@@ -22,37 +22,33 @@ Example:
 __version__ = "0.2.0"
 __author__ = "Chang Liao"
 
-# Import main classes for convenient access
-from pyearthriver.classes.vertex import pyvertex
-from pyearthriver.classes.flowline import pyflowline
-from pyearthriver.classes.edge import pyedge
 from pyearthriver.classes.confluence import pyconfluence
+from pyearthriver.classes.edge import pyedge
+from pyearthriver.classes.flowline import pyflowline
 from pyearthriver.classes.rivergraph import pyrivergraph
 
-# Import pipeline workflows
-from pyearthriver.pipeline import (
-    condition_river_network,
-    compute_strahler_stream_order,
-)
+# Import main classes for convenient access
+from pyearthriver.classes.vertex import pyvertex
 
 # Import formats I/O helpers
 from pyearthriver.formats import (
-    read_flowlines_from_geojson,
-    read_flowlines_from_vector,
     export_flowline_to_vector,
     export_vertex_to_vector,
+    read_flowlines_from_vector,
 )
 
+# Import pipeline workflows
+from pyearthriver.pipeline import compute_strahler_stream_order, condition_river_network
+
 __all__ = [
-    'pyrivergraph',
-    'pyvertex',
-    'pyflowline',
-    'pyedge',
-    'pyconfluence',
-    'condition_river_network',
-    'compute_strahler_stream_order',
-    'read_flowlines_from_geojson',
-    'read_flowlines_from_vector',
-    'export_flowline_to_vector',
-    'export_vertex_to_vector',
+    "pyrivergraph",
+    "pyvertex",
+    "pyflowline",
+    "pyedge",
+    "pyconfluence",
+    "condition_river_network",
+    "compute_strahler_stream_order",
+    "read_flowlines_from_vector",
+    "export_flowline_to_vector",
+    "export_vertex_to_vector",
 ]

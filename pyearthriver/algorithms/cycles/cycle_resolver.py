@@ -4,11 +4,11 @@ Cycle detection and resolution algorithms using reverse-BFS from the outlet.
 
 import logging
 from collections import deque
-from typing import List, Set, Dict, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List, Set, Tuple
 
 if TYPE_CHECKING:
-    from pyearthriver.classes.rivergraph import pyrivergraph
     from pyearthriver.classes.flowline import pyflowline
+    from pyearthriver.classes.rivergraph import pyrivergraph
 
 logger = logging.getLogger(__name__)
 
@@ -44,9 +44,7 @@ def remove_cycles_from_graph(graph: "pyrivergraph") -> List["pyflowline"]:
         logger.debug("Skipping cycle removal: insufficient flowlines")
         return graph.aFlowline.copy()
 
-    logger.info(
-        f"Removing cycles from {len(graph.aFlowline)} flowlines using reverse-BFS approach"
-    )
+    logger.info(f"Removing cycles from {len(graph.aFlowline)} flowlines using reverse-BFS approach")
 
     outlet_id = getattr(graph, "pVertex_outlet_id", None)
 
@@ -104,9 +102,7 @@ def remove_cycles_from_graph(graph: "pyrivergraph") -> List["pyflowline"]:
 
     try:
         result = [
-            graph.aFlowline[i]
-            for i in range(len(graph.aFlowline))
-            if i not in flowlines_to_remove
+            graph.aFlowline[i] for i in range(len(graph.aFlowline)) if i not in flowlines_to_remove
         ]
         print(f"  [remove_cycle] Total flowlines after removal: {len(result)}")
 

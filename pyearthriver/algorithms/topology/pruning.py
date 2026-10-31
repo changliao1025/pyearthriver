@@ -4,20 +4,18 @@ Topology pruning and filtering algorithms for river networks.
 
 import logging
 import os
-from collections import deque, defaultdict
-from typing import List, Set, Optional, TYPE_CHECKING
+from collections import defaultdict, deque
+from typing import TYPE_CHECKING, List, Optional, Set
 
 if TYPE_CHECKING:
-    from pyearthriver.classes.rivergraph import pyrivergraph
     from pyearthriver.classes.flowline import pyflowline
+    from pyearthriver.classes.rivergraph import pyrivergraph
     from pyearthriver.classes.vertex import pyvertex
 
 logger = logging.getLogger(__name__)
 
 
-def find_outlet_reachable_vertices(
-    graph: "pyrivergraph", outlet_vertex_id: int
-) -> Set[int]:
+def find_outlet_reachable_vertices(graph: "pyrivergraph", outlet_vertex_id: int) -> Set[int]:
     """
     Find all vertices that can reach the outlet using backward traversal.
 
@@ -70,14 +68,10 @@ def remove_disconnected_flowlines(
     """
     flowlines = graph.aFlowline
 
-    pVertex_target = (
-        pVertex_outlet if pVertex_outlet is not None else graph.pVertex_outlet
-    )
+    pVertex_target = pVertex_outlet if pVertex_outlet is not None else graph.pVertex_outlet
 
     if pVertex_target is None:
-        logger.warning(
-            "No outlet vertex provided and none stored during initialization"
-        )
+        logger.warning("No outlet vertex provided and none stored during initialization")
         return flowlines
 
     # Use stored outlet vertex ID if it matches, otherwise find it
@@ -94,20 +88,13 @@ def remove_disconnected_flowlines(
         logger.warning("Outlet vertex not found in network graph")
         return flowlines
 
-    logger.info(
-        f"Removing disconnected flowlines using outlet vertex {outlet_vertex_id}"
-    )
+    logger.info(f"Removing disconnected flowlines using outlet vertex {outlet_vertex_id}")
 
-    outlet_reachable_vertices = find_outlet_reachable_vertices(
-        graph, outlet_vertex_id
-    )
+    outlet_reachable_vertices = find_outlet_reachable_vertices(graph, outlet_vertex_id)
 
     reachable_flowlines = set()
     for flowline_idx, (start_id, end_id) in graph.aFlowline_edges.items():
-        if (
-            start_id in outlet_reachable_vertices
-            and end_id in outlet_reachable_vertices
-        ):
+        if start_id in outlet_reachable_vertices and end_id in outlet_reachable_vertices:
             reachable_flowlines.add(flowline_idx)
 
     connected_flowlines = []
@@ -151,9 +138,7 @@ def remove_duplicate_flowlines_direction_sensitive(
         end_id = graph.vertex_to_id.get(flowline.pVertex_end)
 
         if start_id is None or end_id is None:
-            logger.warning(
-                f"Flowline {idx} has unknown vertices, skipping duplicate check"
-            )
+            logger.warning(f"Flowline {idx} has unknown vertices, skipping duplicate check")
             unique_flowlines.append(flowline)
             continue
 
@@ -198,9 +183,7 @@ def remove_duplicate_flowlines_direction_insensitive(
         end_id = graph.vertex_to_id.get(flowline.pVertex_end)
 
         if start_id is None or end_id is None:
-            logger.warning(
-                f"Flowline {idx} has unknown vertices, skipping duplicate check"
-            )
+            logger.warning(f"Flowline {idx} has unknown vertices, skipping duplicate check")
             continue
 
         edge_key = tuple(sorted([start_id, end_id]))
@@ -239,9 +222,7 @@ def remove_duplicate_flowlines_direction_insensitive(
                             end_id, graph.pVertex_outlet_id, max_depth=1000
                         )
                         if paths_to_outlet:
-                            shortest_path_length = min(
-                                len(path) for path in paths_to_outlet
-                            )
+                            shortest_path_length = min(len(path) for path in paths_to_outlet)
                             flowline_path_lengths.append(
                                 (
                                     shortest_path_length,
@@ -256,9 +237,9 @@ def remove_duplicate_flowlines_direction_insensitive(
                             )
 
                     flowline_path_lengths.sort(key=lambda x: x[0])
-                    shortest_path_length, closest_idx, closest_flowline, _ = (
-                        flowline_path_lengths[0]
-                    )
+                    shortest_path_length, closest_idx, closest_flowline, _ = flowline_path_lengths[
+                        0
+                    ]
                     unique_flowlines.append(closest_flowline)
 
                     for (
@@ -379,7 +360,7 @@ def remove_small_river(
     aFlowline_current = graph.aFlowline.copy()
 
     for i in range(nIterations):
-        sStep = "{:02d}".format(i + 1)
+        sStep = f"{i + 1:02d}"
         logger.info(
             f"Iteration {sStep}: removing small rivers with threshold {dThreshold_small_river}"
         )

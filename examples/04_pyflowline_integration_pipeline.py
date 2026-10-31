@@ -12,10 +12,11 @@ Demonstrates:
 """
 
 import os
+
 from pyearthriver import (
     condition_river_network,
-    read_flowlines_from_geojson,
     export_flowline_to_vector,
+    read_flowlines_from_vector,
 )
 
 
@@ -29,7 +30,7 @@ def main():
 
     # 1. Load raw hydrography flowlines
     print(f"\n1. Ingesting raw vector flowlines from: {geojson_path}")
-    raw_flowlines = read_flowlines_from_geojson(geojson_path)
+    raw_flowlines = read_flowlines_from_vector(geojson_path)
     print(f"   Raw reaches count: {len(raw_flowlines)}")
 
     # 2. Execute the complete conditioning pipeline

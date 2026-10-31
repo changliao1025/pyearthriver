@@ -4,11 +4,11 @@ Graph connectivity, topological sorting, and stream segment algorithms.
 
 import logging
 from collections import deque
-from typing import List, Set, Tuple, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple
 
 if TYPE_CHECKING:
-    from pyearthriver.classes.rivergraph import pyrivergraph
     from pyearthriver.classes.flowline import pyflowline
+    from pyearthriver.classes.rivergraph import pyrivergraph
     from pyearthriver.classes.vertex import pyvertex
 
 logger = logging.getLogger(__name__)
@@ -24,11 +24,7 @@ def get_sources(graph: "pyrivergraph") -> List[int]:
     Returns:
         List[int]: List of source vertex IDs.
     """
-    return [
-        node_id
-        for node_id in graph.id_to_vertex.keys()
-        if graph.in_degree[node_id] == 0
-    ]
+    return [node_id for node_id in graph.id_to_vertex.keys() if graph.in_degree[node_id] == 0]
 
 
 def get_sinks(graph: "pyrivergraph") -> List[int]:
@@ -41,11 +37,7 @@ def get_sinks(graph: "pyrivergraph") -> List[int]:
     Returns:
         List[int]: List of sink vertex IDs.
     """
-    return [
-        node_id
-        for node_id in graph.id_to_vertex.keys()
-        if graph.out_degree[node_id] == 0
-    ]
+    return [node_id for node_id in graph.id_to_vertex.keys() if graph.out_degree[node_id] == 0]
 
 
 def find_outlet_vertices(graph: "pyrivergraph") -> List["pyvertex"]:
@@ -58,12 +50,8 @@ def find_outlet_vertices(graph: "pyrivergraph") -> List["pyvertex"]:
     Returns:
         List[pyvertex]: One outlet vertex per detected river network.
     """
-    graph.aVertex_outlet = [
-        graph.id_to_vertex[iVertex] for iVertex in get_sinks(graph)
-    ]
-    logger.info(
-        f"Detected {len(graph.aVertex_outlet)} outlet vertices (river networks)"
-    )
+    graph.aVertex_outlet = [graph.id_to_vertex[iVertex] for iVertex in get_sinks(graph)]
+    logger.info(f"Detected {len(graph.aVertex_outlet)} outlet vertices (river networks)")
     return graph.aVertex_outlet
 
 
@@ -77,9 +65,7 @@ def split_graph(graph: "pyrivergraph") -> List["pyrivergraph"]:
     Returns:
         List[pyrivergraph]: One river graph per independent network.
     """
-    from pyearthriver.algorithms.topology.pruning import (
-        find_outlet_reachable_vertices,
-    )
+    from pyearthriver.algorithms.topology.pruning import find_outlet_reachable_vertices
 
     if not graph.aVertex_outlet:
         find_outlet_vertices(graph)
@@ -103,10 +89,7 @@ def split_graph(graph: "pyrivergraph") -> List["pyrivergraph"]:
         for iFlowline, (iVertex_start, iVertex_end) in graph.aFlowline_edges.items():
             if iFlowline in aFlowline_assigned:
                 continue
-            if (
-                iVertex_start in aVertex_reachable
-                and iVertex_end in aVertex_reachable
-            ):
+            if iVertex_start in aVertex_reachable and iVertex_end in aVertex_reachable:
                 aFlowline_sub.append(graph.aFlowline[iFlowline])
                 aFlowline_assigned.add(iFlowline)
 
@@ -187,18 +170,14 @@ def sort_flowlines_from_outlet(graph: "pyrivergraph") -> List["pyflowline"]:
 
     excluded_count = len(graph.aFlowline) - len(sorted_flowlines)
     if excluded_count > 0:
-        logger.info(
-            f"Excluded {excluded_count} disconnected flowlines that do not flow to outlet"
-        )
+        logger.info(f"Excluded {excluded_count} disconnected flowlines that do not flow to outlet")
         for i, flowline in enumerate(graph.aFlowline):
             if i not in visited_flowlines:
                 logger.debug(
                     f"Excluded disconnected flowline {i} (ID: {getattr(flowline, 'lFlowlineID', 'unknown')})"
                 )
 
-    logger.info(
-        f"Sorted {len(sorted_flowlines)} connected flowlines using BFS from outlet"
-    )
+    logger.info(f"Sorted {len(sorted_flowlines)} connected flowlines using BFS from outlet")
     return sorted_flowlines
 
 
@@ -230,9 +209,7 @@ def define_stream_segment(
         graph.aFlowline = sorted_flowlines
         graph._update_graph_flowlines(sorted_flowlines)
 
-        aStream_segment = [
-            flowline.iStream_segment for flowline in sorted_flowlines
-        ]
+        aStream_segment = [flowline.iStream_segment for flowline in sorted_flowlines]
 
         logger.info(
             f"Topologically sorted {len(sorted_flowlines)} flowlines from outlet to headwater"
@@ -240,14 +217,10 @@ def define_stream_segment(
         return sorted_flowlines, aStream_segment
 
     except Exception as e:
-        logger.error(
-            f"Error in topological sorting: {e}, using simple enumeration"
-        )
+        logger.error(f"Error in topological sorting: {e}, using simple enumeration")
         for i, pFlowline in enumerate(graph.aFlowline, start=1):
             pFlowline.iStream_segment = nFlowline - i + 1
-        aStream_segment = [
-            pFlowline.iStream_segment for pFlowline in graph.aFlowline
-        ]
+        aStream_segment = [pFlowline.iStream_segment for pFlowline in graph.aFlowline]
         return graph.aFlowline, aStream_segment
 
 
@@ -264,9 +237,7 @@ def define_stream_topology(graph: "pyrivergraph") -> List["pyflowline"]:
     aFlowline = graph.aFlowline
     try:
         for flowline in aFlowline:
-            upstream_flowlines = [
-                graph.aFlowline[i] for i in get_upstream_indices(graph, flowline)
-            ]
+            upstream_flowlines = [graph.aFlowline[i] for i in get_upstream_indices(graph, flowline)]
             downstream_flowlines = [
                 graph.aFlowline[i] for i in get_downstream_indices(graph, flowline)
             ]
@@ -353,9 +324,7 @@ def path_to_flowlines(graph: "pyrivergraph", path: List[int]) -> List[int]:
     return flowline_indices
 
 
-def get_upstream_indices(
-    graph: "pyrivergraph", flowline: "pyflowline"
-) -> List[int]:
+def get_upstream_indices(graph: "pyrivergraph", flowline: "pyflowline") -> List[int]:
     """
     Get indices of upstream flowlines for a given flowline.
 
@@ -371,16 +340,12 @@ def get_upstream_indices(
     if start_vertex_id is not None:
         for start_id, neighbors in graph.adjacency_list.items():
             for end_id, flowline_idx in neighbors:
-                if end_id == start_vertex_id and flowline_idx < len(
-                    graph.aFlowline
-                ):
+                if end_id == start_vertex_id and flowline_idx < len(graph.aFlowline):
                     upstream_indices.append(flowline_idx)
     return upstream_indices
 
 
-def get_downstream_indices(
-    graph: "pyrivergraph", flowline: "pyflowline"
-) -> List[int]:
+def get_downstream_indices(graph: "pyrivergraph", flowline: "pyflowline") -> List[int]:
     """
     Get indices of downstream flowlines for a given flowline.
 

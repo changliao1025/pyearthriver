@@ -7,12 +7,12 @@ Unit tests for spatial analysis algorithms in pyearthriver:
 
 import unittest
 from unittest.mock import patch
-from tests import conftest  # Ensures environment setup before imports
 
-from pyearthriver.classes.vertex import pyvertex
-from pyearthriver.classes.edge import pyedge
-import pyearthriver.algorithms.auxiliary.find_vertex_in_list as py_find_v
 import pyearthriver.algorithms.auxiliary.find_index_in_list as py_find_idx
+import pyearthriver.algorithms.auxiliary.find_vertex_in_list as py_find_v
+from pyearthriver.classes.edge import pyedge
+from pyearthriver.classes.vertex import pyvertex
+from tests import conftest  # Ensures environment setup before imports
 
 
 class TestFindVertexInList(unittest.TestCase):
@@ -128,9 +128,8 @@ class TestCythonFallbackBehavior(unittest.TestCase):
     def test_cython_consistency_if_available(self):
         """If Cython compiled extension is available, test result consistency with pure Python."""
         try:
-            from pyearthriver.algorithms.cython.kernel import (
-                find_vertex_in_list as cy_find_v,
-            )
+            from pyearthriver.algorithms.cython.kernel import find_vertex_in_list as cy_find_v
+
             have_cython = True
         except (ImportError, ModuleNotFoundError):
             have_cython = False

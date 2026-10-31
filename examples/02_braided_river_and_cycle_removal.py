@@ -10,10 +10,8 @@ Demonstrates:
 """
 
 import os
-from pyearthriver import (
-    pyrivergraph,
-    read_flowlines_from_geojson,
-)
+
+from pyearthriver import pyrivergraph, read_flowlines_from_vector
 
 
 def main():
@@ -21,7 +19,7 @@ def main():
     geojson_path = os.path.join(data_dir, "braided_network.geojson")
 
     print(f"Loading braided river network from: {geojson_path}")
-    flowlines = read_flowlines_from_geojson(geojson_path)
+    flowlines = read_flowlines_from_vector(geojson_path)
     print(f"Initial flowline reaches: {len(flowlines)}")
 
     for f in flowlines:

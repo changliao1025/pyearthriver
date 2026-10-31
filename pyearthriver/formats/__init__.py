@@ -6,11 +6,10 @@ This module provides functions for exporting river network elements
 
 from .export_flowline import export_flowline_to_vector
 from .export_vertex import export_vertex_to_vector
-from .load_flowline import read_flowlines_from_geojson, read_flowlines_from_vector
+from .load_flowline import read_flowlines_from_vector
 
 __all__ = [
-    'export_flowline_to_vector',
-    'export_vertex_to_vector',
-    'read_flowlines_from_geojson',
-    'read_flowlines_from_vector',
+    "export_flowline_to_vector",
+    "export_vertex_to_vector",
+    "read_flowlines_from_vector",
 ]

@@ -3,12 +3,13 @@ Algorithms for pruning and resolving braided channels and parallel flowlines.
 """
 
 import logging
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING, List
+
 from .braided_detector import find_braided_channels, find_parallel_paths
 
 if TYPE_CHECKING:
-    from pyearthriver.classes.rivergraph import pyrivergraph
     from pyearthriver.classes.flowline import pyflowline
+    from pyearthriver.classes.rivergraph import pyrivergraph
 
 logger = logging.getLogger(__name__)
 
@@ -52,9 +53,7 @@ def remove_braided_river(graph: "pyrivergraph") -> List["pyflowline"]:
                 )
 
     simplified_flowlines = [
-        flowline
-        for idx, flowline in enumerate(graph.aFlowline)
-        if idx not in flowlines_to_remove
+        flowline for idx, flowline in enumerate(graph.aFlowline) if idx not in flowlines_to_remove
     ]
 
     logger.info(
@@ -79,9 +78,7 @@ def remove_parallel_river(graph: "pyrivergraph") -> List["pyflowline"]:
         List[pyflowline]: Flowlines with parallel paths resolved.
     """
     if not hasattr(graph, "aFlowline") or not graph.aFlowline:
-        logger.warning(
-            "No flowlines available in class instance for parallel river removal"
-        )
+        logger.warning("No flowlines available in class instance for parallel river removal")
         return []
 
     if len(graph.aFlowline) <= 1:
@@ -119,9 +116,7 @@ def remove_parallel_river(graph: "pyrivergraph") -> List["pyflowline"]:
 
             for flowline_idx in path_flowlines:
                 if flowline_idx >= len(graph.aFlowline):
-                    logger.warning(
-                        f"Invalid flowline index {flowline_idx}, skipping"
-                    )
+                    logger.warning(f"Invalid flowline index {flowline_idx}, skipping")
                     continue
 
                 flowline = graph.aFlowline[flowline_idx]
@@ -155,13 +150,9 @@ def remove_parallel_river(graph: "pyrivergraph") -> List["pyflowline"]:
 
     try:
         result = [
-            graph.aFlowline[i]
-            for i in range(len(graph.aFlowline))
-            if i not in flowlines_to_remove
+            graph.aFlowline[i] for i in range(len(graph.aFlowline)) if i not in flowlines_to_remove
         ]
-        logger.info(
-            f"Removed {len(flowlines_to_remove)} flowlines to resolve parallel paths"
-        )
+        logger.info(f"Removed {len(flowlines_to_remove)} flowlines to resolve parallel paths")
         if len(result) == 0 and len(graph.aFlowline) > 0:
             logger.warning(
                 "All flowlines were removed during parallel path resolution, returning original"
@@ -172,7 +163,5 @@ def remove_parallel_river(graph: "pyrivergraph") -> List["pyflowline"]:
         graph.merge_flowline()
         return result
     except Exception as e:
-        logger.error(
-            f"Error filtering flowlines during parallel path resolution: {e}"
-        )
+        logger.error(f"Error filtering flowlines during parallel path resolution: {e}")
         return graph.aFlowline.copy()

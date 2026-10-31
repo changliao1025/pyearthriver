@@ -7,29 +7,29 @@ complex river networks with braided channels, loops, and parallel streams.
 
 import logging
 import os
-from typing import List, Dict, Set, Tuple, Optional, DefaultDict
-from collections import defaultdict, deque
-import numpy as np
-from enum import Enum
 import time
+from collections import defaultdict, deque
+from enum import Enum
+from typing import DefaultDict, Dict, List, Optional, Set, Tuple
+
+import numpy as np
 
 # Set up logger
 logger = logging.getLogger(__name__)
 # Import for spatial indexing (R-tree)
 try:
     from rtree.index import Index as RTreeindex
+
     HAS_RTREE = True
 except ImportError:
     HAS_RTREE = False
     logger.warning("R-tree not available - using fallback spatial indexing")
 
 from pyearthriver.algorithms.spatial import find_vertex_on_edge
-
-
+from pyearthriver.classes.confluence import pyconfluence
+from pyearthriver.classes.edge import pyedge
 from pyearthriver.classes.flowline import pyflowline
 from pyearthriver.classes.vertex import pyvertex
-from pyearthriver.classes.edge import pyedge
-from pyearthriver.classes.confluence import pyconfluence
 from pyearthriver.formats.export_flowline import export_flowline_to_vector
 from pyearthriver.formats.export_vertex import export_vertex_to_vector
 
@@ -54,9 +54,7 @@ class pyrivergraph:
     # INITIALIZATION & BASIC GRAPH OPERATIONS
     # ========================================================================
 
-    def __init__(
-        self, flowlines: List[pyflowline], pVertex_outlet: Optional[pyvertex] = None
-    ):
+    def __init__(self, flowlines: List[pyflowline], pVertex_outlet: Optional[pyvertex] = None):
         """
         Initialize the river network graph from flowlines.
 
@@ -95,11 +93,13 @@ class pyrivergraph:
     def get_sources(self) -> List[int]:
         """Get source nodes (headwaters) with no incoming edges."""
         from pyearthriver.algorithms.topology.connectivity import get_sources
+
         return get_sources(self)
 
     def get_sinks(self) -> List[int]:
         """Get sink nodes (outlets) with no outgoing edges."""
         from pyearthriver.algorithms.topology.connectivity import get_sinks
+
         return get_sinks(self)
 
     def get_vertices(self) -> List[pyvertex]:
@@ -165,6 +165,7 @@ class pyrivergraph:
             List[pyvertex]: One outlet vertex per detected river network
         """
         from pyearthriver.algorithms.topology.connectivity import find_outlet_vertices
+
         return find_outlet_vertices(self)
 
     def split_graph(self) -> List["pyrivergraph"]:
@@ -175,6 +176,7 @@ class pyrivergraph:
             List[pyrivergraph]: One river graph per independent network
         """
         from pyearthriver.algorithms.topology.connectivity import split_graph
+
         return split_graph(self)
 
     def export_graph(
@@ -210,9 +212,7 @@ class pyrivergraph:
                     os.makedirs(sFolder_output)
                 export_flowline_to_vector(self.aFlowline, sFilename_flowline_in)
                 aFilename_out.append(sFilename_flowline_in)
-                logger.info(
-                    f"Exported {len(self.aFlowline)} flowlines to {sFilename_flowline_in}"
-                )
+                logger.info(f"Exported {len(self.aFlowline)} flowlines to {sFilename_flowline_in}")
             else:
                 logger.warning("No flowlines available to export")
 
@@ -223,9 +223,7 @@ class pyrivergraph:
                     os.makedirs(sFolder_output)
                 export_vertex_to_vector(self.aVertex, sFilename_vertex_in)
                 aFilename_out.append(sFilename_vertex_in)
-                logger.info(
-                    f"Exported {len(self.aVertex)} vertices to {sFilename_vertex_in}"
-                )
+                logger.info(f"Exported {len(self.aVertex)} vertices to {sFilename_vertex_in}")
             else:
                 logger.warning("No vertices available to export")
 
@@ -247,9 +245,8 @@ class pyrivergraph:
         Returns:
             List of flowlines that are connected to the outlet vertex
         """
-        from pyearthriver.algorithms.topology.pruning import (
-            remove_disconnected_flowlines,
-        )
+        from pyearthriver.algorithms.topology.pruning import remove_disconnected_flowlines
+
         return remove_disconnected_flowlines(self, pVertex_outlet=pVertex_outlet)
 
     def remove_braided_river(self) -> List[pyflowline]:
@@ -267,6 +264,7 @@ class pyrivergraph:
         """
 
         from pyearthriver.algorithms.braided import remove_braided_river
+
         return remove_braided_river(self)
 
     def remove_parallel_river(self) -> List[pyflowline]:
@@ -278,8 +276,8 @@ class pyrivergraph:
             List[pyflowline]: Flowlines with parallel paths resolved
         """
         from pyearthriver.algorithms.braided import remove_parallel_river
-        return remove_parallel_river(self)
 
+        return remove_parallel_river(self)
 
     def remove_cycle(self) -> List[pyflowline]:
         """
@@ -329,8 +327,8 @@ class pyrivergraph:
         >>> print(f"Removed: {len(flowlines) - len(acyclic_flowlines)} flowlines")
         """
         from pyearthriver.algorithms.cycles import remove_cycles_from_graph
-        return remove_cycles_from_graph(self)
 
+        return remove_cycles_from_graph(self)
 
     def remove_small_river(
         self,
@@ -352,6 +350,7 @@ class pyrivergraph:
             list: Updated flowlines after iterative small river removal
         """
         from pyearthriver.algorithms.topology.pruning import remove_small_river
+
         return remove_small_river(
             self,
             dThreshold_small_river,
@@ -374,9 +373,8 @@ class pyrivergraph:
         Returns:
             List of flowlines with duplicates removed
         """
-        from pyearthriver.algorithms.topology.pruning import (
-            remove_duplicate_flowlines,
-        )
+        from pyearthriver.algorithms.topology.pruning import remove_duplicate_flowlines
+
         return remove_duplicate_flowlines(
             self, iFlag_direction_insensitive=iFlag_direction_insensitive
         )
@@ -388,6 +386,7 @@ class pyrivergraph:
         from pyearthriver.algorithms.topology.pruning import (
             remove_duplicate_flowlines_direction_sensitive,
         )
+
         return remove_duplicate_flowlines_direction_sensitive(self)
 
     def _remove_duplicate_flowlines_direction_insensitive(self) -> List[pyflowline]:
@@ -397,6 +396,7 @@ class pyrivergraph:
         from pyearthriver.algorithms.topology.pruning import (
             remove_duplicate_flowlines_direction_insensitive,
         )
+
         return remove_duplicate_flowlines_direction_insensitive(self)
 
     # ========================================================================
@@ -408,6 +408,7 @@ class pyrivergraph:
         Find braided channels (multiple flowlines between same vertex pair).
         """
         from pyearthriver.algorithms.braided import find_braided_channels
+
         return find_braided_channels(self)
 
     def find_parallel_paths(self) -> List[Dict]:
@@ -415,6 +416,7 @@ class pyrivergraph:
         Find divergent parallel sections between vertices.
         """
         from pyearthriver.algorithms.braided import find_parallel_paths
+
         return find_parallel_paths(self)
 
     def _find_partial_parallel_sections(self) -> List[Dict]:
@@ -422,15 +424,15 @@ class pyrivergraph:
         Find partial parallel sections within longer paths.
         """
         from pyearthriver.algorithms.braided import find_partial_parallel_sections
+
         return find_partial_parallel_sections(self)
 
-    def _find_reconvergence_points(
-        self, divergence_id: int, max_depth: int = 8
-    ) -> Optional[int]:
+    def _find_reconvergence_points(self, divergence_id: int, max_depth: int = 8) -> Optional[int]:
         """
         Find vertices where paths from a divergence point reconverge.
         """
         from pyearthriver.algorithms.braided import find_reconvergence_points
+
         return find_reconvergence_points(self, divergence_id, max_depth)
 
     def find_first_common_vertex(self, reachable_list1, reachable_list2):
@@ -438,6 +440,7 @@ class pyrivergraph:
         Find the first vertex that appears in both lists, respecting topological order.
         """
         from pyearthriver.algorithms.braided import find_first_common_vertex
+
         return find_first_common_vertex(reachable_list1, reachable_list2)
 
     def _get_reachable_vertices(self, start_id: int, max_depth: int) -> List[int]:
@@ -445,14 +448,15 @@ class pyrivergraph:
         Get all vertices reachable from a starting vertex within max_depth.
         """
         from pyearthriver.algorithms.braided import get_reachable_vertices
-        return get_reachable_vertices(self, start_id, max_depth)
 
+        return get_reachable_vertices(self, start_id, max_depth)
 
     def _find_linear_segments(self) -> List[List[int]]:
         """
         Find linear segments that can be merged into single flowlines.
         """
         from pyearthriver.algorithms.topology.segmentation import find_linear_segments
+
         return find_linear_segments(self)
 
     def _build_bidirectional_segment(
@@ -467,9 +471,8 @@ class pyrivergraph:
         Build a complete linear segment by extending both upstream and downstream
         from the starting flowline.
         """
-        from pyearthriver.algorithms.topology.segmentation import (
-            build_bidirectional_segment,
-        )
+        from pyearthriver.algorithms.topology.segmentation import build_bidirectional_segment
+
         return build_bidirectional_segment(
             self,
             start_flowline_idx,
@@ -493,6 +496,7 @@ class pyrivergraph:
         Split flowline based on the intersection with a list of vertex.
         """
         from pyearthriver.algorithms.topology.segmentation import split_flowline
+
         return split_flowline(
             self,
             aVertex_in=aVertex_in,
@@ -505,6 +509,7 @@ class pyrivergraph:
         Merge linear segments of flowlines into single flowlines.
         """
         from pyearthriver.algorithms.topology.segmentation import merge_flowline
+
         return merge_flowline(self)
 
     # ========================================================================
@@ -516,6 +521,7 @@ class pyrivergraph:
         Update stream order for head water flowlines using graph-based approach.
         """
         from pyearthriver.algorithms.stream_order import update_headwater_stream_order
+
         return update_headwater_stream_order(self)
 
     def identify_headwater_flowlines(self) -> List[pyflowline]:
@@ -523,8 +529,8 @@ class pyrivergraph:
         Identify headwater flowlines (sources) in the network.
         """
         from pyearthriver.algorithms.stream_order import identify_headwater_flowlines
-        return identify_headwater_flowlines(self)
 
+        return identify_headwater_flowlines(self)
 
     def define_stream_segment(self):
         """
@@ -534,6 +540,7 @@ class pyrivergraph:
             Tuple of (sorted_flowlines, segment_indices)
         """
         from pyearthriver.algorithms.topology.connectivity import define_stream_segment
+
         return define_stream_segment(self)
 
     def _sort_flowlines_from_outlet(self):
@@ -543,9 +550,8 @@ class pyrivergraph:
         Returns:
             List of flowlines sorted from outlet to headwater
         """
-        from pyearthriver.algorithms.topology.connectivity import (
-            sort_flowlines_from_outlet,
-        )
+        from pyearthriver.algorithms.topology.connectivity import sort_flowlines_from_outlet
+
         return sort_flowlines_from_outlet(self)
 
     def define_river_confluence(self):
@@ -560,6 +566,7 @@ class pyrivergraph:
             list [pyconfluence]: A list of confluences in this basin
         """
         from pyearthriver.algorithms.confluence import define_river_confluence
+
         return define_river_confluence(self)
 
     def define_stream_topology(self) -> List[pyflowline]:
@@ -567,6 +574,7 @@ class pyrivergraph:
         Define comprehensive stream topology including confluences and stream segments.
         """
         from pyearthriver.algorithms.topology.connectivity import define_stream_topology
+
         return define_stream_topology(self)
 
     def define_stream_order(self, iFlag_so_method_in: int = 1) -> List[pyflowline]:
@@ -574,8 +582,8 @@ class pyrivergraph:
         Define stream order for all flowlines using graph-based approach with confluence analysis.
         """
         from pyearthriver.algorithms.stream_order import define_stream_order
-        return define_stream_order(self, iFlag_so_method_in)
 
+        return define_stream_order(self, iFlag_so_method_in)
 
     # ========================================================================
     # PRIVATE METHODS - GRAPH CONSTRUCTION & MANAGEMENT
@@ -664,9 +672,7 @@ class pyrivergraph:
         # The outlet vertex ID can become invalid after graph modifications
         if hasattr(self, "pVertex_outlet") and self.pVertex_outlet is not None:
             self._set_outlet_vertex_id()
-            logger.debug(
-                f"Updated outlet vertex ID after graph rebuild: {self.pVertex_outlet_id}"
-            )
+            logger.debug(f"Updated outlet vertex ID after graph rebuild: {self.pVertex_outlet_id}")
 
         return
 
@@ -681,6 +687,7 @@ class pyrivergraph:
         Find all paths from start to target vertex using DFS.
         """
         from pyearthriver.algorithms.topology.connectivity import find_all_paths
+
         return find_all_paths(self, start_id, target_id, max_depth=max_depth)
 
     def _path_to_flowlines(self, path: List[int]) -> List[int]:
@@ -688,15 +695,15 @@ class pyrivergraph:
         Convert a path of vertex IDs to flowline indices.
         """
         from pyearthriver.algorithms.topology.connectivity import path_to_flowlines
+
         return path_to_flowlines(self, path)
 
     def _find_outlet_reachable_vertices(self, outlet_vertex_id: int) -> Set[int]:
         """
         Find all vertices that can reach the outlet using backward traversal.
         """
-        from pyearthriver.algorithms.topology.pruning import (
-            find_outlet_reachable_vertices,
-        )
+        from pyearthriver.algorithms.topology.pruning import find_outlet_reachable_vertices
+
         return find_outlet_reachable_vertices(self, outlet_vertex_id)
 
     def _remove_small_river_step(
@@ -706,30 +713,27 @@ class pyrivergraph:
         Remove small rivers based on length threshold.
         """
         from pyearthriver.algorithms.topology.pruning import remove_small_river_step
+
         return remove_small_river_step(self, flowlines, threshold)
 
-    def _merge_flowline_segment(
-        self, segment_flowlines: List[pyflowline]
-    ) -> Optional[pyflowline]:
+    def _merge_flowline_segment(self, segment_flowlines: List[pyflowline]) -> Optional[pyflowline]:
         """
         Merge a segment of flowlines into a single flowline.
         """
-        from pyearthriver.algorithms.topology.segmentation import (
-            merge_flowline_segment,
-        )
+        from pyearthriver.algorithms.topology.segmentation import merge_flowline_segment
+
         return merge_flowline_segment(segment_flowlines)
 
     # ========================================================================
     # PRIVATE METHODS - VERTEX & CONFLUENCE MANAGEMENT
     # ========================================================================
 
-    def _create_confluence_object(
-        self, vertex_id: int, vertex: pyvertex
-    ) -> Optional[pyconfluence]:
+    def _create_confluence_object(self, vertex_id: int, vertex: pyvertex) -> Optional[pyconfluence]:
         """
         Create a confluence object for a vertex.
         """
         from pyearthriver.algorithms.confluence import create_confluence_object
+
         return create_confluence_object(self, vertex_id, vertex)
 
     # ========================================================================
@@ -741,6 +745,7 @@ class pyrivergraph:
         Process confluences iteratively to update stream orders.
         """
         from pyearthriver.algorithms.stream_order import process_confluences_iteratively
+
         return process_confluences_iteratively(self, iFlag_so_method_in)
 
     def get_upstream_indices(self, flowline: pyflowline) -> List[int]:
@@ -748,13 +753,13 @@ class pyrivergraph:
         Get indices of upstream flowlines for a given flowline.
         """
         from pyearthriver.algorithms.topology.connectivity import get_upstream_indices
+
         return get_upstream_indices(self, flowline)
 
     def get_downstream_indices(self, flowline: pyflowline) -> List[int]:
         """
         Get indices of downstream flowlines for a given flowline.
         """
-        from pyearthriver.algorithms.topology.connectivity import (
-            get_downstream_indices,
-        )
+        from pyearthriver.algorithms.topology.connectivity import get_downstream_indices
+
         return get_downstream_indices(self, flowline)

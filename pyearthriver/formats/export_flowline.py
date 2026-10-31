@@ -1,19 +1,23 @@
-import os
 import json
-from typing import List, Optional, Dict, Any
+import os
+from typing import Any, Dict, List, Optional
+
 from osgeo import ogr, osr
 from pyearth.gis.gdal.gdal_vector_format_support import get_vector_driver_from_filename
 
-def export_flowline_to_vector(aFlowline_in: List,
+
+def export_flowline_to_vector(
+    aFlowline_in: List,
     sFilename_vector_out: str,
     iFlag_projected_in: Optional[int] = None,
     pSpatial_reference_in: Optional[osr.SpatialReference] = None,
     aAttribute_field: Optional[List[str]] = None,
     aAttribute_data: Optional[List[List[Any]]] = None,
-    aAttribute_dtype: Optional[List[str]] = None) -> None:
+    aAttribute_dtype: Optional[List[str]] = None,
+) -> None:
     """
     Export flowline objects to a vector format file (GeoJSON, Shapefile, etc.).
-    
+
     This function converts a list of flowline objects to various vector formats.
 
     Args:
@@ -46,22 +50,28 @@ def export_flowline_to_vector(aFlowline_in: List,
         # Validate attributes
         has_attributes = all([aAttribute_field, aAttribute_data, aAttribute_dtype])
         if has_attributes:
-            nAttribute1, nAttribute2, nAttribute3 = len(aAttribute_field), len(aAttribute_data), len(aAttribute_dtype)
+            nAttribute1, nAttribute2, nAttribute3 = (
+                len(aAttribute_field),
+                len(aAttribute_data),
+                len(aAttribute_dtype),
+            )
             if not (nAttribute1 == nAttribute2 == nAttribute3):
-                raise ValueError('Attribute field, data, and dtype lists must have the same length')
+                raise ValueError("Attribute field, data, and dtype lists must have the same length")
             if nFlowline != len(aAttribute_data[0]):
-                raise ValueError(f'Number of flowlines ({nFlowline}) does not match attribute data length ({len(aAttribute_data[0])})')
+                raise ValueError(
+                    f"Number of flowlines ({nFlowline}) does not match attribute data length ({len(aAttribute_data[0])})"
+                )
 
         # Get appropriate driver based on file extension
         pDriver = get_vector_driver_from_filename(sFilename_vector_out)
         pDataset = pDriver.CreateDataSource(sFilename_vector_out)
-        pLayer = pDataset.CreateLayer('flowline', pSpatial_reference_in, ogr.wkbLineString)
+        pLayer = pDataset.CreateLayer("flowline", pSpatial_reference_in, ogr.wkbLineString)
 
         # Add ID field
-        pLayer.CreateField(ogr.FieldDefn('lineid', ogr.OFTInteger64))
+        pLayer.CreateField(ogr.FieldDefn("lineid", ogr.OFTInteger64))
 
         # Add attribute fields
-        dtype_to_ogr = {'int': ogr.OFTInteger64, 'float': ogr.OFTReal}
+        dtype_to_ogr = {"int": ogr.OFTInteger64, "float": ogr.OFTReal}
         if has_attributes:
             for field, dtype in zip(aAttribute_field, aAttribute_dtype):
                 if dtype not in dtype_to_ogr:
@@ -69,25 +79,27 @@ def export_flowline_to_vector(aFlowline_in: List,
                 pLayer.CreateField(ogr.FieldDefn(field, dtype_to_ogr[dtype]))
 
         pLayerDefn = pLayer.GetLayerDefn()
-        coord_attrs = ('dx', 'dy') if is_projected else ('dLongitude_degree', 'dLatitude_degree')
+        coord_attrs = ("dx", "dy") if is_projected else ("dLongitude_degree", "dLatitude_degree")
 
         # Add features
         for lID in range(nFlowline):
             pFlowline = aFlowline_in[lID]
             pLine = ogr.Geometry(ogr.wkbLineString)
-            
+
             for vertex in pFlowline.aVertex:
                 pLine.AddPoint(*(getattr(vertex, attr) for attr in coord_attrs))
 
             pLine.FlattenTo2D()
-            
+
             pFeature = ogr.Feature(pLayerDefn)
             pFeature.SetGeometry(pLine)
             pFeature.SetField("lineid", lID + 1)
 
             if has_attributes:
-                for sField, dtype, data_list in zip(aAttribute_field, aAttribute_dtype, aAttribute_data):
-                    value = int(data_list[lID]) if dtype == 'int' else float(data_list[lID])
+                for sField, dtype, data_list in zip(
+                    aAttribute_field, aAttribute_dtype, aAttribute_data
+                ):
+                    value = int(data_list[lID]) if dtype == "int" else float(data_list[lID])
                     pFeature.SetField(sField, value)
 
             pLayer.CreateFeature(pFeature)
@@ -99,7 +111,3 @@ def export_flowline_to_vector(aFlowline_in: List,
 
     except Exception as e:
         raise RuntimeError(f"Error exporting flowlines to {sFilename_vector_out}: {str(e)}")
-
-
-
-

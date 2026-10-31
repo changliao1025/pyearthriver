@@ -3,10 +3,11 @@ Unit tests for high-level pipeline workflows in pyearthriver.pipeline.
 """
 
 import unittest
-from pyearthriver.classes.vertex import pyvertex
+
 from pyearthriver.classes.edge import pyedge
 from pyearthriver.classes.flowline import pyflowline
-from pyearthriver.pipeline import condition_river_network, compute_strahler_stream_order
+from pyearthriver.classes.vertex import pyvertex
+from pyearthriver.pipeline import compute_strahler_stream_order, condition_river_network
 
 
 class TestPipeline(unittest.TestCase):

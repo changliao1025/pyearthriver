@@ -1,10 +1,11 @@
 cimport cython
-from libcpp.vector cimport vector
+from libc.math cimport M_PI, abs, acos, asin, cos, sin, sqrt
 from libcpp.algorithm cimport sort
 from libcpp.utility cimport pair
-from libc.math cimport M_PI, sin, cos, asin,acos, sqrt, abs
+from libcpp.vector cimport vector
 
 from rtree.index import Index as RTreeindex
+
 from cython.operator cimport dereference as deref
 
 """ Low-level function for pyearthriver algorithms
@@ -166,5 +167,3 @@ cpdef add_unique_vertex(list aVertex_in, pVertex_in, double dThreshold_in = 1.0E
         pass
 
     return aVertex_in, iFlag_exist
-
-

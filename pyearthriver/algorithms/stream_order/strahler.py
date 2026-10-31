@@ -3,11 +3,11 @@ Stream ordering algorithms including Strahler and Shreve methodologies.
 """
 
 import logging
-from typing import List, Tuple, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 if TYPE_CHECKING:
-    from pyearthriver.classes.rivergraph import pyrivergraph
     from pyearthriver.classes.flowline import pyflowline
+    from pyearthriver.classes.rivergraph import pyrivergraph
 
 logger = logging.getLogger(__name__)
 
@@ -44,9 +44,7 @@ def update_headwater_stream_order(graph: "pyrivergraph") -> List["pyflowline"]:
         List[pyflowline]: Updated flowlines list.
     """
     if not hasattr(graph, "aFlowline") or not graph.aFlowline:
-        logger.warning(
-            "No flowlines available in class instance for stream order update"
-        )
+        logger.warning("No flowlines available in class instance for stream order update")
         return []
 
     logger.info(
@@ -56,9 +54,7 @@ def update_headwater_stream_order(graph: "pyrivergraph") -> List["pyflowline"]:
     try:
         aFlowline_headwater = identify_headwater_flowlines(graph)
         if not aFlowline_headwater:
-            logger.warning(
-                "No headwater flowlines identified for stream order update"
-            )
+            logger.warning("No headwater flowlines identified for stream order update")
             return graph.aFlowline.copy()
         else:
             for pFlowline in aFlowline_headwater:
@@ -96,9 +92,7 @@ def process_confluences_iteratively(graph: "pyrivergraph", iFlag_so_method_in: i
         for idx in unresolved_confluences:
             confluence = graph.aConfluence[idx]
             upstream_orders = [
-                fl.iStream_order
-                for fl in confluence.aFlowline_upstream
-                if fl.iStream_order > 0
+                fl.iStream_order for fl in confluence.aFlowline_upstream if fl.iStream_order > 0
             ]
 
             if len(upstream_orders) == len(confluence.aFlowline_upstream):
@@ -110,9 +104,7 @@ def process_confluences_iteratively(graph: "pyrivergraph", iFlag_so_method_in: i
                 elif iFlag_so_method_in == 2:  # Shreve
                     downstream_order = sum(upstream_orders)
                 else:
-                    logger.warning(
-                        f"Unknown stream order method: {iFlag_so_method_in}"
-                    )
+                    logger.warning(f"Unknown stream order method: {iFlag_so_method_in}")
                     continue
 
                 for fl in confluence.aFlowline_downstream:

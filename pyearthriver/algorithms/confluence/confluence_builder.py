@@ -3,7 +3,8 @@ River confluence construction and identification algorithms.
 """
 
 import logging
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Optional
+
 from pyearthriver.classes.confluence import pyconfluence
 from pyearthriver.classes.vertex import pyvertex
 

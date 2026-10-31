@@ -105,7 +105,7 @@ from pyearthriver import (
 
 ## 3. Modular Architecture Refactor
 
-Currently, `pyrivergraph.py` contains 2,300 lines combining graph construction, spatial index maintenance, topological pruning, and stream ordering. 
+Currently, `pyrivergraph.py` contains 2,300 lines combining graph construction, spatial index maintenance, topological pruning, and stream ordering.
 
 We will transition to a **Modular Engine + Facade Pattern**:
 

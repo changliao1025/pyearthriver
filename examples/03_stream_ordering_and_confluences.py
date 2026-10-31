@@ -10,10 +10,8 @@ Demonstrates:
 """
 
 import os
-from pyearthriver import (
-    pyrivergraph,
-    read_flowlines_from_geojson,
-)
+
+from pyearthriver import pyrivergraph, read_flowlines_from_vector
 
 
 def main():
@@ -21,7 +19,7 @@ def main():
     geojson_path = os.path.join(data_dir, "dendritic_network.geojson")
 
     print(f"Loading dendritic river network from: {geojson_path}")
-    flowlines = read_flowlines_from_geojson(geojson_path)
+    flowlines = read_flowlines_from_vector(geojson_path)
     print(f"Initial flowlines count: {len(flowlines)}")
 
     outlet_vertex = flowlines[-1].pVertex_end
@@ -38,9 +36,11 @@ def main():
     print(f"Identified {len(confluences)} confluence junction(s):")
     for i, conf in enumerate(confluences, start=1):
         angle = conf.calculate_branching_angle()
-        print(f"  Confluence #{i}: Upstream streams={len(conf.aFlowline_upstream)}, "
-              f"Downstream streams={len(conf.aFlowline_downstream)}, "
-              f"Branching angle={angle:.1f}°")
+        print(
+            f"  Confluence #{i}: Upstream streams={len(conf.aFlowline_upstream)}, "
+            f"Downstream streams={len(conf.aFlowline_downstream)}, "
+            f"Branching angle={angle:.1f}°"
+        )
 
     # 3. Compute Strahler stream order
     print("\nCalculating Strahler stream order...")
@@ -49,8 +49,10 @@ def main():
 
     print(f"\nFinal Stream Ordering Results:")
     for f in ordered_flowlines:
-        print(f"  Stream Reach ID {f.lFlowlineID}: Strahler Order = {f.iStream_order}, "
-              f"Length = {f.dLength:.1f}m")
+        print(
+            f"  Stream Reach ID {f.lFlowlineID}: Strahler Order = {f.iStream_order}, "
+            f"Length = {f.dLength:.1f}m"
+        )
 
 
 if __name__ == "__main__":

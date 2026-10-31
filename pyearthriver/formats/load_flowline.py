@@ -92,9 +92,7 @@ def _read_flowlines_from_geojson_dict(
         for line_coord in lines_coords:
             unique_pts = []
             for pt in line_coord:
-                if not unique_pts or (
-                    pt[0] != unique_pts[-1][0] or pt[1] != unique_pts[-1][1]
-                ):
+                if not unique_pts or (pt[0] != unique_pts[-1][0] or pt[1] != unique_pts[-1][1]):
                     unique_pts.append(pt)
             if len(unique_pts) < 2:
                 continue
@@ -127,13 +125,9 @@ def _read_flowlines_from_geojson_dict(
             flowline.lFlowlineIndex = flowline_index
 
             if "drainage_area" in props or "area" in props:
-                flowline.dDrainage_area = float(
-                    props.get("drainage_area", props.get("area", 0.0))
-                )
+                flowline.dDrainage_area = float(props.get("drainage_area", props.get("area", 0.0)))
             if "stream_order" in props or "order" in props:
-                flowline.iStream_order = int(
-                    props.get("stream_order", props.get("order", -1))
-                )
+                flowline.iStream_order = int(props.get("stream_order", props.get("order", -1)))
             if "stream_segment" in props or "segment" in props:
                 flowline.iStream_segment = int(
                     props.get("stream_segment", props.get("segment", -1))
@@ -217,28 +211,19 @@ def read_flowlines_from_vector(
             raise RuntimeError(f"No vector layers found in {filepath}")
 
         pSpatialRef = pLayer.GetSpatialRef()
-        spatial_ref_wkt = (
-            pSpatialRef.ExportToWkt() if pSpatialRef is not None else None
-        )
+        spatial_ref_wkt = pSpatialRef.ExportToWkt() if pSpatialRef is not None else None
 
         pSpatial_reference_gcs = osr.SpatialReference()
         pSpatial_reference_gcs.ImportFromEPSG(4326)
-        pSpatial_reference_gcs.SetAxisMappingStrategy(
-            osr.OAMS_TRADITIONAL_GIS_ORDER
-        )
+        pSpatial_reference_gcs.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
 
         transform = None
         if pSpatialRef is not None and not pSpatialRef.IsSame(pSpatial_reference_gcs):
-            transform = osr.CoordinateTransformation(
-                pSpatialRef, pSpatial_reference_gcs
-            )
+            transform = osr.CoordinateTransformation(pSpatialRef, pSpatial_reference_gcs)
 
         # Inspect fields available on layer
         ldefn = pLayer.GetLayerDefn()
-        field_names = [
-            ldefn.GetFieldDefn(i).GetName()
-            for i in range(ldefn.GetFieldCount())
-        ]
+        field_names = [ldefn.GetFieldDefn(i).GetName() for i in range(ldefn.GetFieldCount())]
         field_lookup = {name.lower(): name for name in field_names}
 
         def _find_field(candidates: List[str], preferred: Optional[str] = None) -> Optional[str]:
@@ -280,25 +265,25 @@ def read_flowlines_from_vector(
             resolved_id = None
             if field_id:
                 val = pFeature.GetField(field_id)
-                try:
-                    resolved_id = int(val)
-                except (ValueError, TypeError):
-                    resolved_id = flowline_counter
+                if val is not None:
+                    try:
+                        resolved_id = int(val)
+                    except (ValueError, TypeError):
+                        resolved_id = flowline_counter
             if resolved_id is None:
                 resolved_id = flowline_counter
 
-            iStream_segment = (
-                int(pFeature.GetField(field_segment)) if field_segment else -1
-            )
-            iStream_order = (
-                int(pFeature.GetField(field_order)) if field_order else -1
-            )
-            lNHDPlusID = (
-                int(pFeature.GetField(field_nhdplus)) if field_nhdplus else -1
-            )
-            dDrainage_area = (
-                float(pFeature.GetField(field_area)) if field_area else 0.0
-            )
+            val_seg = pFeature.GetField(field_segment) if field_segment else None
+            iStream_segment = int(val_seg) if val_seg is not None else -1
+
+            val_order = pFeature.GetField(field_order) if field_order else None
+            iStream_order = int(val_order) if val_order is not None else -1
+
+            val_nhd = pFeature.GetField(field_nhdplus) if field_nhdplus else None
+            lNHDPlusID = int(val_nhd) if val_nhd is not None else -1
+
+            val_area = pFeature.GetField(field_area) if field_area else None
+            dDrainage_area = float(val_area) if val_area is not None else 0.0
 
             sGeomType = pGeometry.GetGeometryName().upper()
             lines_coords = []
@@ -315,9 +300,7 @@ def read_flowlines_from_vector(
             for raw_pts in lines_coords:
                 unique_pts = []
                 for pt in raw_pts:
-                    if not unique_pts or (
-                        pt[0] != unique_pts[-1][0] or pt[1] != unique_pts[-1][1]
-                    ):
+                    if not unique_pts or (pt[0] != unique_pts[-1][0] or pt[1] != unique_pts[-1][1]):
                         unique_pts.append(pt)
                 if len(unique_pts) < 2:
                     continue
@@ -364,25 +347,3 @@ def read_flowlines_from_vector(
     finally:
         pLayer = None
         pDataset = None
-
-
-def read_flowlines_from_geojson(
-    source: Union[PathLike, Dict[str, Any]],
-    id_field: Optional[str] = None,
-) -> List[pyflowline]:
-    """Read flowline objects from a GeoJSON file or dictionary.
-
-    Supports both 'LineString' and 'MultiLineString' geometries within
-    a GeoJSON FeatureCollection or a single Feature.
-
-    Args:
-        source: File path to a vector file or an already-parsed GeoJSON dictionary.
-        id_field: Field name to extract flowline ID from properties.
-
-    Returns:
-        List of constructed pyflowline objects.
-    """
-    return read_flowlines_from_vector(
-        source, id_field=id_field, return_spatial_ref=False
-    )
-

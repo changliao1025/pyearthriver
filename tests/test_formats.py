@@ -2,18 +2,19 @@
 Unit tests for format loading and vector I/O in pyearthriver.formats.
 """
 
-import unittest
-import tempfile
-import os
 import json
-from pyearthriver.formats.load_flowline import read_flowlines_from_geojson
-from pyearthriver.classes.vertex import pyvertex
+import os
+import tempfile
+import unittest
+
 from pyearthriver.classes.edge import pyedge
 from pyearthriver.classes.flowline import pyflowline
+from pyearthriver.classes.vertex import pyvertex
+from pyearthriver.formats.load_flowline import read_flowlines_from_vector
 
 
 class TestLoadFlowline(unittest.TestCase):
-    """Test reading flowlines from GeoJSON sources."""
+    """Test reading flowlines from vector and GeoJSON sources."""
 
     def setUp(self):
         self.sample_geojson = {
@@ -54,7 +55,7 @@ class TestLoadFlowline(unittest.TestCase):
 
     def test_read_from_dict(self):
         """Test reading flowlines from a pre-parsed GeoJSON dictionary."""
-        flowlines = read_flowlines_from_geojson(self.sample_geojson)
+        flowlines = read_flowlines_from_vector(self.sample_geojson)
         self.assertEqual(len(flowlines), 2)
 
         # Check first flowline
@@ -80,7 +81,7 @@ class TestLoadFlowline(unittest.TestCase):
             tmp_path = tmp.name
 
         try:
-            flowlines = read_flowlines_from_geojson(tmp_path)
+            flowlines = read_flowlines_from_vector(tmp_path)
             self.assertEqual(len(flowlines), 2)
             self.assertEqual(flowlines[0].lFlowlineID, 1)
         finally:
@@ -90,12 +91,12 @@ class TestLoadFlowline(unittest.TestCase):
     def test_file_not_found_raises(self):
         """Test FileNotFoundError on non-existent path."""
         with self.assertRaises(FileNotFoundError):
-            read_flowlines_from_geojson("/path/to/non_existent_file.geojson")
+            read_flowlines_from_vector("/path/to/non_existent_file.geojson")
 
     def test_invalid_type_raises(self):
         """Test TypeError when passing invalid type."""
         with self.assertRaises(TypeError):
-            read_flowlines_from_geojson(12345)  # type: ignore
+            read_flowlines_from_vector(12345)  # type: ignore
 
 
 if __name__ == "__main__":

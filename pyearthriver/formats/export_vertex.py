@@ -1,13 +1,17 @@
 import os
 from typing import List, Optional
+
 from osgeo import ogr, osr
 from pyearth.gis.gdal.gdal_vector_format_support import get_vector_driver_from_filename
 
-def export_vertex_to_vector(aVertex_in: List,
-        sFilename_vector_out: str,
-        iFlag_projected_in: Optional[int] = None,
-        pSpatial_reference_in: Optional[osr.SpatialReference] = None,
-        aAttribute_data: Optional[List[int]] = None) -> None:
+
+def export_vertex_to_vector(
+    aVertex_in: List,
+    sFilename_vector_out: str,
+    iFlag_projected_in: Optional[int] = None,
+    pSpatial_reference_in: Optional[osr.SpatialReference] = None,
+    aAttribute_data: Optional[List[int]] = None,
+) -> None:
     """
     Export vertices to a vector format file (shapefile, GeoJSON, etc.).
 
@@ -17,7 +21,7 @@ def export_vertex_to_vector(aVertex_in: List,
         iFlag_projected_in (int, optional): Flag indicating if coordinates are projected (1) or geographic (0). Defaults to None (treated as 0).
         pSpatial_reference_in (osr.SpatialReference, optional): Spatial reference system. Defaults to WGS84 (EPSG:4326).
         aAttribute_data (list, optional): List of attribute values corresponding to vertices. Defaults to None.
-    
+
     Returns:
         None
     """
@@ -36,12 +40,12 @@ def export_vertex_to_vector(aVertex_in: List,
 
         # Create datasource and layer
         pDataset = pDriver.CreateDataSource(sFilename_vector_out)
-        pLayer = pDataset.CreateLayer('vertex', pSpatial_reference_in, ogr.wkbPoint)
-        
+        pLayer = pDataset.CreateLayer("vertex", pSpatial_reference_in, ogr.wkbPoint)
+
         # Add fields
-        pLayer.CreateField(ogr.FieldDefn('pointid', ogr.OFTInteger64))
+        pLayer.CreateField(ogr.FieldDefn("pointid", ogr.OFTInteger64))
         if has_attributes:
-            pLayer.CreateField(ogr.FieldDefn('connectivity', ogr.OFTInteger64))
+            pLayer.CreateField(ogr.FieldDefn("connectivity", ogr.OFTInteger64))
 
         pLayerDefn = pLayer.GetLayerDefn()
 
@@ -66,6 +70,6 @@ def export_vertex_to_vector(aVertex_in: List,
         # Flush and cleanup
         pDataset.FlushCache()
         pDataset = None
-        
+
     except Exception as e:
         raise RuntimeError(f"Error exporting vertices to {sFilename_vector_out}: {str(e)}")

@@ -39,11 +39,12 @@ def find_vertex_in_list(aVertex_in, pVertex_in, dThreshold_in=1.0e-6):
             iFlag_exist = 1
             lIndex = k
             break
-        elif (abs(pVertex.dLongitude_degree - x) <= dThreshold_in and
-              abs(pVertex.dLatitude_degree - y) <= dThreshold_in):
+        elif (
+            abs(pVertex.dLongitude_degree - x) <= dThreshold_in
+            and abs(pVertex.dLatitude_degree - y) <= dThreshold_in
+        ):
             iFlag_exist = 1
             lIndex = k
             break
 
     return iFlag_exist, lIndex
-

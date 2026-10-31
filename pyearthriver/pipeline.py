@@ -7,9 +7,10 @@ braided channel pruning, cycle detection, and stream ordering.
 
 import logging
 from typing import List, Optional, Tuple
-from pyearthriver.classes.vertex import pyvertex
+
 from pyearthriver.classes.flowline import pyflowline
 from pyearthriver.classes.rivergraph import pyrivergraph
+from pyearthriver.classes.vertex import pyvertex
 
 logger = logging.getLogger(__name__)
 
@@ -124,4 +125,3 @@ def compute_strahler_stream_order(
     if isinstance(res, tuple):
         return res[0]
     return graph.aFlowline
-

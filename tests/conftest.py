@@ -7,9 +7,10 @@ faithful stubs so that unit tests can execute cleanly under standard unittest / 
 If real dependencies are already present, they are preserved and used as-is.
 """
 
+import math
 import sys
 import types
-import math
+
 
 def setup_test_environment():
     # 1. numpy compatibility stub if not installed
@@ -17,8 +18,13 @@ def setup_test_environment():
         import numpy as np
     except ImportError:
         np = types.ModuleType("numpy")
-        class _NumpyInteger(int): pass
-        class _NumpyFloat(float): pass
+
+        class _NumpyInteger(int):
+            pass
+
+        class _NumpyFloat(float):
+            pass
+
         class _NumpyArray(list):
             def __getitem__(self, item):
                 if isinstance(item, (list, tuple, _NumpyArray)):
@@ -43,21 +49,27 @@ def setup_test_environment():
     except ImportError:
         rtree = types.ModuleType("rtree")
         rtree_index = types.ModuleType("rtree.index")
+
         class RTreeIndex:
             def __init__(self):
                 self.items = []
+
             def insert(self, item_id, bound):
                 self.items.append((item_id, bound))
+
             def intersection(self, bound):
                 left, bottom, right, top = bound
                 return [
-                    i for i, (il, ibot, ir, itop) in self.items
+                    i
+                    for i, (il, ibot, ir, itop) in self.items
                     if not (right < il or left > ir or top < ibot or bottom > itop)
                 ]
+
             def search_surrounding(self, pt):
                 x, y = pt
                 delta = 1e-4
                 return self.intersection((x - delta, y - delta, x + delta, y + delta))
+
         rtree_index.Index = RTreeIndex
         rtree.index = rtree_index
         sys.modules["rtree"] = rtree
@@ -92,10 +104,14 @@ def setup_test_environment():
                 self.dLatitude_radian = math.radians(self.dLatitude_degree)
 
             def __eq__(self, other):
-                if not hasattr(other, "dLongitude_degree") or not hasattr(other, "dLatitude_degree"):
+                if not hasattr(other, "dLongitude_degree") or not hasattr(
+                    other, "dLatitude_degree"
+                ):
                     return False
-                return (abs(self.dLongitude_degree - other.dLongitude_degree) < 1e-6 and
-                        abs(self.dLatitude_degree - other.dLatitude_degree) < 1e-6)
+                return (
+                    abs(self.dLongitude_degree - other.dLongitude_degree) < 1e-6
+                    and abs(self.dLatitude_degree - other.dLatitude_degree) < 1e-6
+                )
 
             def __hash__(self):
                 return hash((round(self.dLongitude_degree, 6), round(self.dLatitude_degree, 6)))
@@ -105,7 +121,10 @@ def setup_test_environment():
                 lat2 = math.radians(other.dLatitude_degree)
                 dlat = lat2 - lat1
                 dlon = math.radians(other.dLongitude_degree - self.dLongitude_degree)
-                a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
+                a = (
+                    math.sin(dlat / 2) ** 2
+                    + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+                )
                 c = 2 * math.asin(math.sqrt(max(0.0, min(1.0, a))))
                 return 6378137.0 * c
 
@@ -119,7 +138,9 @@ def setup_test_environment():
             def __eq__(self, other):
                 if not hasattr(other, "pPoint_start") or not hasattr(other, "pPoint_end"):
                     return False
-                return self.pPoint_start == other.pPoint_start and self.pPoint_end == other.pPoint_end
+                return (
+                    self.pPoint_start == other.pPoint_start and self.pPoint_end == other.pPoint_end
+                )
 
             def __hash__(self):
                 return hash((self.pPoint_start, self.pPoint_end))
@@ -213,7 +234,10 @@ def setup_test_environment():
         osgeo = types.ModuleType("osgeo")
         ogr = types.ModuleType("osgeo.ogr")
         osr = types.ModuleType("osgeo.osr")
-        class SpatialReference: pass
+
+        class SpatialReference:
+            pass
+
         osr.SpatialReference = SpatialReference
         osgeo.ogr = ogr
         osgeo.osr = osr

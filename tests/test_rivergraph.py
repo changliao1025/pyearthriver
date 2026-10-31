@@ -7,12 +7,12 @@ Unit tests for pyrivergraph class:
 """
 
 import unittest
-from tests import conftest  # Ensures environment setup before imports
 
-from pyearthriver.classes.vertex import pyvertex
 from pyearthriver.classes.edge import pyedge
 from pyearthriver.classes.flowline import pyflowline
 from pyearthriver.classes.rivergraph import pyrivergraph
+from pyearthriver.classes.vertex import pyvertex
+from tests import conftest  # Ensures environment setup before imports
 
 
 class TestPyRivergraph(unittest.TestCase):

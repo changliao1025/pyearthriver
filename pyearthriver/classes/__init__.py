@@ -4,17 +4,16 @@ This module contains the fundamental data structures used throughout
 the rivergraph library.
 """
 
-from .vertex import pyvertex
-from .flowline import pyflowline
-from .edge import pyedge
 from .confluence import pyconfluence
+from .edge import pyedge
+from .flowline import pyflowline
 from .rivergraph import pyrivergraph
-
+from .vertex import pyvertex
 
 __all__ = [
-    'pyvertex',
-    'pyflowline',
-    'pyedge',
-    'pyconfluence',
-    'pyrivergraph',
+    "pyvertex",
+    "pyflowline",
+    "pyedge",
+    "pyconfluence",
+    "pyrivergraph",
 ]
