@@ -42,7 +42,7 @@ jobs:
             scipy
             gdal
             rtree
-            "pyearth>=0.2.5"
+            pyearth>=0.2.5
             cython
             pytest
             pytest-cov
