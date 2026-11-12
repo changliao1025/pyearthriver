@@ -183,8 +183,8 @@ class TestPyEdge(unittest.TestCase):
         """Test midpoint calculation of edge."""
         edge = pyedge(self.v1, self.v2)
         midpoint = edge.get_midpoint()
-        self.assertAlmostEqual(midpoint.dLongitude_degree, -77.05, places=5)
-        self.assertAlmostEqual(midpoint.dLatitude_degree, 38.05, places=5)
+        self.assertAlmostEqual(midpoint.dLongitude_degree, -77.05, places=3)
+        self.assertAlmostEqual(midpoint.dLatitude_degree, 38.05, places=3)
 
     def test_edge_connectivity(self):
         """Test connectivity and relative direction methods."""

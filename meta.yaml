@@ -1,5 +1,5 @@
 {% set name = "pyearthriver" %}
-{% set version = "0.1.0" %}
+{% set version = "0.1.1" %}
 {% set git_rev = "main" %}
 {% set python_min = "3.8" %}
 

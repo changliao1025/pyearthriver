@@ -19,7 +19,7 @@ Example:
     >>> graph.detect_cycles()
 """
 
-__version__ = "0.2.0"
+__version__ = "0.1.1"
 __author__ = "Chang Liao"
 
 from pyearthriver.classes.confluence import pyconfluence

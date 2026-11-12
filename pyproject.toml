@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pyearthriver"
-version = "0.2.0"
+version = "0.1.1"
 description = "A Python library for analyzing and processing river network flowlines using graph-based algorithms"
 readme = "README.md"
 authors = [
@@ -30,7 +30,7 @@ requires-python = ">=3.8"
 dependencies = [
     "numpy>=1.20.0",
     "scipy>=1.7.0",
-    "pyearth>=0.2.0",
+    "pyearth>=0.2.5",
     "rtree>=0.9.0",
 ]
 
