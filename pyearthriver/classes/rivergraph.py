@@ -25,7 +25,6 @@ except ImportError:
     HAS_RTREE = False
     logger.warning("R-tree not available - using fallback spatial indexing")
 
-from pyearthriver.algorithms.spatial import find_vertex_on_edge
 from pyearthriver.classes.confluence import pyconfluence
 from pyearthriver.classes.edge import pyedge
 from pyearthriver.classes.flowline import pyflowline
